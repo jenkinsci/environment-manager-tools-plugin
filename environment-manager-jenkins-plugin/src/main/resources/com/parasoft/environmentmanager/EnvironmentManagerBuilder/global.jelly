@@ -22,5 +22,8 @@
     <f:entry title="password" field="password">
       <f:password />
     </f:entry>
+    <f:validateButton
+      title="Test Connection" progress="Connecting to Environment Manager" 
+        method="testConnection" with="emUrl,username,password"/> 
   </f:section>
 </j:jelly>

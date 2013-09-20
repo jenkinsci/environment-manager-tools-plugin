@@ -10,10 +10,10 @@
     When submitted, it will be passed to the corresponding constructor parameter.
   -->
   <f:entry title="Environment ID" field="environmentId">
-    <f:textbox />
+    <f:select />
   </f:entry>
   <f:entry title="Instance ID" field="instanceId">
-    <f:textbox />
+    <f:select />
   </f:entry>
   <f:entry title="Abort On Failure" field="abortOnFailure">
     <f:checkbox />
