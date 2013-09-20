@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.parasoft.environmentmanager.HelloWorldBuilder_-DescriptorImpl plugin="environment-manager@1.0-SNAPSHOT">
+  <useFrench>false</useFrench>
+</com.parasoft.environmentmanager.HelloWorldBuilder_-DescriptorImpl>
