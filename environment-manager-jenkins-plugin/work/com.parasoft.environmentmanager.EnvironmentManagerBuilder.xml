@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<com.parasoft.environmentmanager.EnvironmentManagerBuilder_-DescriptorImpl plugin="environment-manager@1.0-SNAPSHOT">
-  <emUrl>http://dane.parasoft.com:8080</emUrl>
-  <username>admin</username>
-  <password>admin</password>
-</com.parasoft.environmentmanager.EnvironmentManagerBuilder_-DescriptorImpl>
