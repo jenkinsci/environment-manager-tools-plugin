@@ -62,9 +62,5 @@ public class ProvisionsImplTest {
         }
         assertFalse(failed);
     }
-    
-    private boolean isStepDone(JSONObject jsonStep, int stepNumber) {
-        
-        return false;
-    }
+
 }
