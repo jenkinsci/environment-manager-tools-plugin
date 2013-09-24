@@ -170,7 +170,11 @@ public class EnvironmentManagerBuilder extends Builder {
                     JSONArray envArray = envs.getJSONArray("environments");
                     for (Object o : envArray) {
                         JSONObject env = (JSONObject) o;
-                        m.add(env.getString("name"), env.getString("id"));
+                        String name = env.getString("name");
+                        if (env.has("version")) {
+                            name += " (" + env.getString("version") + ")";
+                        }
+                        m.add(name, env.getString("id"));
                     }
                 }
             } catch (IOException e) {
