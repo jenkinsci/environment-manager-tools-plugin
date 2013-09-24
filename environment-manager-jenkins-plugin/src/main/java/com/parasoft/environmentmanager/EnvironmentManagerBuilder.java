@@ -53,6 +53,18 @@ public class EnvironmentManagerBuilder extends Builder {
         this.abortOnFailure = abortOnFailure;
     }
     
+    public int getEnvironmentId() {
+        return environmentId;
+    }
+    
+    public int getInstanceId() {
+        return instanceId;
+    }
+    
+    public boolean isAbortOnFailure() {
+        return abortOnFailure;
+    }
+    
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
             BuildListener listener) throws InterruptedException, IOException {
