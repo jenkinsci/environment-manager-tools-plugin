@@ -9,10 +9,10 @@
     Creates a text field that shows the value of the "name" property.
     When submitted, it will be passed to the corresponding constructor parameter.
   -->
-  <f:entry title="Environment ID" field="environmentId">
+  <f:entry title="Environment Name" field="environmentId">
     <f:select />
   </f:entry>
-  <f:entry title="Instance ID" field="instanceId">
+  <f:entry title="Instance Name" field="instanceId">
     <f:select />
   </f:entry>
   <f:entry title="Abort On Failure" field="abortOnFailure">

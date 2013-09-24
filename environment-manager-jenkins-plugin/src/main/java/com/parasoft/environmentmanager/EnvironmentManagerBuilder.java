@@ -56,28 +56,31 @@ public class EnvironmentManagerBuilder extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
             BuildListener listener) throws InterruptedException, IOException {
-        listener.getLogger().println(getDescriptor().getEmUrl());
+        listener.getLogger().println("Executing provisioning action on " + getDescriptor().getEmUrl());
         
         Provisions provisions = new ProvisionsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword());
-        JSONObject result = provisions.createProvisionEvent(environmentId, instanceId, abortOnFailure);
-        int id = result.getInt("eventId");
+        JSONObject response = provisions.createProvisionEvent(environmentId, instanceId, abortOnFailure);
+        int id = response.getInt("eventId");
         listener.getLogger().println("Provisioning event id: " + id);
         
-        result = provisions.getProvisions(id);
-        
-        String status = result.getString("status");
-        String percent = "0";
-        while ("running".equals(status) && !"100".equals(percent)) {
-            Thread.sleep(1000);
-            JSONObject response = provisions.getProvisions(id);
-            status = response.getString("status");
-            JSONArray steps = response.getJSONArray("steps");
-            JSONObject step = (JSONObject) steps.get(0);
-            percent = step.getString("percent");
-            listener.getLogger().println(percent + "%");
+        boolean failed = false;
+        response = provisions.getProvisions(id);
+        JSONArray steps = response.getJSONArray("steps");
+        for (int i = 0; i < steps.size(); i++) {
+            JSONObject step = provisions.getProvisions(id).getJSONArray("steps").getJSONObject(i);
+            listener.getLogger().println("Running step #" + (i + 1));
+            String result = step.getString("result");
+            while ("running".equals(result)) {
+                Thread.sleep(1000);
+                listener.getLogger().println(step.getString("percent") + "%");
+                step = provisions.getProvisions(id).getJSONArray("steps").getJSONObject(i);
+                result = step.getString("result");
+                failed |= "error".equals(result);
+            }
         }
+        
         listener.getLogger().println("Completed provisioning event with id: " + id);
-        return true;
+        return !failed;
     }
     
     @Override
@@ -90,6 +93,10 @@ public class EnvironmentManagerBuilder extends Builder {
         private String emUrl;
         private String username;
         private String password;
+        
+        public DescriptorImpl() {
+            load();
+        }
         
         public String getEmUrl() {
             return emUrl;
@@ -121,6 +128,14 @@ public class EnvironmentManagerBuilder extends Builder {
         @Override
         public String getDisplayName() {
             return "Parasoft Environment Manager";
+        }
+        
+        @Override
+        public Builder newInstance(StaplerRequest req, JSONObject formData)
+                throws hudson.model.Descriptor.FormException {
+            save();
+            return new EnvironmentManagerBuilder(formData.getInt("environmentId"), 
+                    formData.getInt("instanceId"), formData.getBoolean("abortOnFailure"));
         }
         
         @Override
