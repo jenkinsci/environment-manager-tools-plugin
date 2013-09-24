@@ -47,9 +47,4 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
     public JSONObject getProvisions(int id) throws IOException {
         return doGet("/em/api/v1/provisions/" + id);
     }
-
-    public JSONObject deleteProvisions(int id) {
-        // TODO
-        return null;
-    }
 }

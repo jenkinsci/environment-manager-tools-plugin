@@ -23,5 +23,4 @@ public interface Provisions {
     JSONObject createProvisionEvent(int environmentId, int instanceId, boolean abortOnFailure) throws IOException;
     JSONObject getProvisions() throws IOException;
     JSONObject getProvisions(int id) throws IOException;
-    JSONObject deleteProvisions(int id) throws IOException;
 }
