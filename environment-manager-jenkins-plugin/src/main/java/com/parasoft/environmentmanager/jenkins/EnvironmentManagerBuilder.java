@@ -13,7 +13,7 @@
  * $Date$
  * $Log$
  */
-package com.parasoft.environmentmanager;
+package com.parasoft.environmentmanager.jenkins;
 
 import java.io.IOException;
 
