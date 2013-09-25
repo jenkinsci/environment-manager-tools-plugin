@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<project name="provisioning" default="main" xmlns:em="antlib:com.parasoft.environmentmanager.antlib">
+    <import file="build.xml"/>
+
+    <target name="main">
+        <echo>Provisioning an environment manager instance</echo>
+
+        <!-- build main sources -->
+        <em:provision url="http://dane.parasoft.com:8080/em" username="admin" password="admin"
+            environmentId="129" instanceId="45"/>
+
+    </target>
+
+</project>
