@@ -25,6 +25,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import com.parasoft.em.client.api.Environments;
+import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Provisions;
 import com.parasoft.em.client.impl.EnvironmentsImpl;
 import com.parasoft.em.client.impl.ProvisionsImpl;
@@ -67,32 +68,16 @@ public class EnvironmentManagerBuilder extends Builder {
     
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-            BuildListener listener) throws InterruptedException, IOException {
+            final BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println("Executing provisioning action on " + getDescriptor().getEmUrl());
         
         Provisions provisions = new ProvisionsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword());
-        JSONObject response = provisions.createProvisionEvent(environmentId, instanceId, abortOnFailure);
-        int id = response.getInt("eventId");
-        listener.getLogger().println("Provisioning event id: " + id);
-        
-        boolean failed = false;
-        response = provisions.getProvisions(id);
-        JSONArray steps = response.getJSONArray("steps");
-        for (int i = 0; i < steps.size(); i++) {
-            JSONObject step = provisions.getProvisions(id).getJSONArray("steps").getJSONObject(i);
-            listener.getLogger().println("Running step #" + (i + 1));
-            String result = step.getString("result");
-            while ("running".equals(result)) {
-                Thread.sleep(1000);
-                listener.getLogger().println(step.getString("percent") + "%");
-                step = provisions.getProvisions(id).getJSONArray("steps").getJSONObject(i);
-                result = step.getString("result");
-                failed |= "error".equals(result);
+        JSONObject event = provisions.createProvisionEvent(environmentId, instanceId, abortOnFailure);
+        return provisions.monitorEvent(event, new EventMonitor() {
+            public void logMessage(String message) {
+                listener.getLogger().println(message);
             }
-        }
-        
-        listener.getLogger().println("Completed provisioning event with id: " + id);
-        return !failed;
+        });
     }
     
     @Override

@@ -18,9 +18,11 @@ package com.parasoft.em.client.impl;
 
 import java.io.IOException;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
+import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Provisions;
 
 public class ProvisionsImpl extends JSONClient implements Provisions {
@@ -46,5 +48,30 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
 
     public JSONObject getProvisions(int id) throws IOException {
         return doGet("api/v1/provisions/" + id);
+    }
+    
+    public boolean monitorEvent(JSONObject event, EventMonitor monitor) throws IOException {
+        int id = event.getInt("eventId");
+        monitor.logMessage("Provisioning event id: " + id);
+        boolean failed = false;
+        JSONObject response = getProvisions(id);
+        JSONArray steps = response.getJSONArray("steps");
+        for (int i = 0; i < steps.size(); i++) {
+            JSONObject step = getProvisions(id).getJSONArray("steps").getJSONObject(i);
+            monitor.logMessage("Running step #" + (i + 1));
+            String result = step.getString("result");
+            while ("running".equals(result)) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+                monitor.logMessage(step.getString("percent") + "%");
+                step = getProvisions(id).getJSONArray("steps").getJSONObject(i);
+                result = step.getString("result");
+                failed |= "error".equals(result);
+            }
+        }
+        monitor.logMessage("Completed provisioning event with id: " + id);
+        return !failed;
     }
 }
