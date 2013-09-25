@@ -25,7 +25,7 @@ import com.parasoft.em.client.api.Provisions;
 
 public class ProvisionsImplTest {
     
-    private static String EM_URL = "http://dane.parasoft.com:8080";
+    private static String EM_URL = "http://dane.parasoft.com:8080/em";
     
     @Test
     public void testGetProvisions() throws Exception {

@@ -127,6 +127,19 @@ public class EnvironmentManagerBuilder extends Builder {
                 Environments environments = new EnvironmentsImpl(emUrl, username, password);
                 environments.getEnvironments();
             } catch (IOException e) {
+                // First try to re-run while appending /em
+                if (emUrl.endsWith("/")) {
+                    emUrl += "em";
+                } else {
+                    emUrl += "/em";
+                }
+                try {
+                    Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                    environments.getEnvironments();
+                    return FormValidation.ok("Successfully connected to Environment Manager");
+                } catch (IOException e2) {
+                    // return the original exception
+                }
                 return FormValidation.error(e, "Unable to connect to Environment Manager Server");
             }
             return FormValidation.ok("Successfully connected to Environment Manager");
@@ -143,19 +156,31 @@ public class EnvironmentManagerBuilder extends Builder {
         }
         
         @Override
-        public Builder newInstance(StaplerRequest req, JSONObject formData)
-                throws hudson.model.Descriptor.FormException {
-            save();
-            return new EnvironmentManagerBuilder(formData.getInt("environmentId"), 
-                    formData.getInt("instanceId"), formData.getBoolean("abortOnFailure"));
-        }
-        
-        @Override
         public boolean configure(StaplerRequest req, JSONObject json)
                 throws hudson.model.Descriptor.FormException {
             emUrl = json.getString("emUrl");
             username = json.getString("username");
             password = json.getString("password");
+            
+            // Test the emUrl, appending "/em" if necessary
+            try {
+                Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                environments.getEnvironments();
+            } catch (IOException e) {
+                // First try to re-run while appending the default context path /em
+                if (emUrl.endsWith("/")) {
+                    emUrl += "em";
+                } else {
+                    emUrl += "/em";
+                }
+                try {
+                    Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                    environments.getEnvironments();
+                    // Override the url with the default context path
+                    json.put("emUrl", emUrl);
+                } catch (IOException e2) {
+                }
+            }
             
             save();
             return super.configure(req, json);

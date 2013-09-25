@@ -35,6 +35,9 @@ public class JSONClient {
     protected String password;
     
     public JSONClient(String baseUrl, String username, String password) {
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;

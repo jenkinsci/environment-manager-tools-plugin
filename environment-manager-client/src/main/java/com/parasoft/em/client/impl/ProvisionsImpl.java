@@ -37,14 +37,14 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
             payload.put("abortOnFailure", abortOnFailure);
         } catch (JSONException e) {
         }
-        return doPost("/em/api/v1/provisions", payload);
+        return doPost("api/v1/provisions", payload);
     }
 
     public JSONObject getProvisions() throws IOException {
-        return doGet("/em/api/v1/provisions");
+        return doGet("api/v1/provisions");
     }
 
     public JSONObject getProvisions(int id) throws IOException {
-        return doGet("/em/api/v1/provisions/" + id);
+        return doGet("api/v1/provisions/" + id);
     }
 }
