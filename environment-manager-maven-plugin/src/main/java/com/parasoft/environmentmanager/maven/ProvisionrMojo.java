@@ -29,7 +29,12 @@ import com.parasoft.em.client.api.Provisions;
 import com.parasoft.em.client.impl.EnvironmentsImpl;
 import com.parasoft.em.client.impl.ProvisionsImpl;
 
-public class EnvironmentManagerMojo extends AbstractMojo {
+/**
+ * Mojo to provision an environment manager instance
+ *
+ * @goal provision
+ */
+public class ProvisionrMojo extends AbstractMojo {
 
     /**
      * @parameter expression="${em.url}"

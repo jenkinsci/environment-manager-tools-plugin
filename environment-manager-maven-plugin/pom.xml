@@ -14,15 +14,15 @@
       <version>2.0</version>
     </dependency>
     <dependency>
+    	<groupId>com.parasoft</groupId>
+    	<artifactId>environment-manager-client</artifactId>
+    	<version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>com.parasoft</groupId>
-    	<artifactId>environment-manager-client</artifactId>
-    	<version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
