@@ -101,7 +101,9 @@ public class ProvisionrMojo extends AbstractMojo {
                 }
             });
             if (!success) {
-                throw new MojoFailureException("Provisioning event failed");
+                String message = "Provisioning event failed";
+                getLog().error(message);
+                throw new MojoFailureException(message);
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Could not connect to Environment Manager at " + url, e);
