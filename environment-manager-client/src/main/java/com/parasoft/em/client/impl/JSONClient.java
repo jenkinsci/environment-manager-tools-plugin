@@ -41,6 +41,10 @@ public class JSONClient {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
+        if (this.password != null && this.password.length() == 0) {
+            // empty string is considered no password
+            this.password = null;
+        }
     }
 
     private HttpURLConnection getConnection(String restPath) throws IOException {
