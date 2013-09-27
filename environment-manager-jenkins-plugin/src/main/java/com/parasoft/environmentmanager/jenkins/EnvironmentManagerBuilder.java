@@ -38,6 +38,7 @@ import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import hudson.util.ListBoxModel;
 
 public class EnvironmentManagerBuilder extends Builder {
@@ -71,7 +72,7 @@ public class EnvironmentManagerBuilder extends Builder {
             final BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println("Executing provisioning action on " + getDescriptor().getEmUrl());
         
-        Provisions provisions = new ProvisionsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword());
+        Provisions provisions = new ProvisionsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
         JSONObject event = provisions.createProvisionEvent(environmentId, instanceId, abortOnFailure);
         return provisions.monitorEvent(event, new EventMonitor() {
             public void logMessage(String message) {
@@ -89,7 +90,7 @@ public class EnvironmentManagerBuilder extends Builder {
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         private String emUrl;
         private String username;
-        private String password;
+        private Secret password;
         
         public DescriptorImpl() {
             load();
@@ -103,7 +104,7 @@ public class EnvironmentManagerBuilder extends Builder {
             return username;
         }
         
-        public String getPassword() {
+        public Secret getPassword() {
             return password;
         }
         
@@ -141,29 +142,29 @@ public class EnvironmentManagerBuilder extends Builder {
         }
         
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json)
-                throws hudson.model.Descriptor.FormException {
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             emUrl = json.getString("emUrl");
             username = json.getString("username");
-            password = json.getString("password");
+            password = Secret.fromString(json.getString("password"));
             
             // Test the emUrl, appending "/em" if necessary
             try {
-                Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
                 environments.getEnvironments();
             } catch (IOException e) {
                 // First try to re-run while appending the default context path /em
-                if (emUrl.endsWith("/")) {
-                    emUrl += "em";
+                String testUrl = emUrl;
+                if (testUrl.endsWith("/")) {
+                    testUrl += "em";
                 } else {
-                    emUrl += "/em";
+                    testUrl += "/em";
                 }
                 try {
-                    Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                    Environments environments = new EnvironmentsImpl(testUrl, username, password.getPlainText());
                     environments.getEnvironments();
-                    // Override the url with the default context path
-                    json.put("emUrl", emUrl);
+                    emUrl = testUrl;
                 } catch (IOException e2) {
+                    throw new FormException("Unable to connect to Environment Manager at " + emUrl, "emUrl");
                 }
             }
             
@@ -175,7 +176,7 @@ public class EnvironmentManagerBuilder extends Builder {
             ListBoxModel m = new ListBoxModel();
             try {
                 if (emUrl != null) {
-                    Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                    Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = environments.getEnvironments();
                     JSONArray envArray = envs.getJSONArray("environments");
                     for (Object o : envArray) {
@@ -196,7 +197,7 @@ public class EnvironmentManagerBuilder extends Builder {
         public ListBoxModel doFillInstanceIdItems(@QueryParameter int environmentId){
             ListBoxModel m = new ListBoxModel();
             try {
-                Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
                 JSONObject instances = environments.getEnvironmentInstances(environmentId);
                 if (instances.has("instances")) {
                     JSONArray instArray = instances.getJSONArray("instances");
