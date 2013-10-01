@@ -72,6 +72,7 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
             }
         }
         monitor.logMessage("Completed provisioning event with id: " + id);
+        monitor.logMessage("See " + baseUrl + "environments/" + event.getInt("environmentId") + " for details");
         return !failed;
     }
 }
