@@ -68,17 +68,36 @@ public class EnvironmentManagerBuilder extends Builder {
     }
     
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
+    public boolean perform(final AbstractBuild<?, ?> build, Launcher launcher,
             final BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println("Executing provisioning action on " + getDescriptor().getEmUrl());
-        
         Provisions provisions = new ProvisionsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
         JSONObject event = provisions.createProvisionEvent(environmentId, instanceId, abortOnFailure);
-        return provisions.monitorEvent(event, new EventMonitor() {
+        boolean result = provisions.monitorEvent(event, new EventMonitor() {
             public void logMessage(String message) {
                 listener.getLogger().println(message);
+                if (build.getExecutor().isInterrupted()) {
+                    listener.getLogger().println("build interrupted");
+                }
             }
         });
+        String baseUrl = getDescriptor().getEmUrl();
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
+        
+        JSONObject eventResult = provisions.getProvisions(event.getInt("eventId"));
+        JSONArray steps = eventResult.getJSONArray("steps");
+        int failed = 0;
+        for (int i = 0; i < steps.size(); i++) {
+            JSONObject step = steps.getJSONObject(i);
+            if ("error".equals(step.getString("result"))) {
+                failed++;
+            }
+        }
+        String environmentUrl = baseUrl + "environments/" + environmentId;
+        build.addAction(new ProvisioningEventAction(build, environmentUrl, steps.size(), failed));
+        return result;
     }
     
     @Override
@@ -109,8 +128,9 @@ public class EnvironmentManagerBuilder extends Builder {
         }
         
         public FormValidation doTestConnection(@QueryParameter String emUrl, @QueryParameter String username, @QueryParameter String password) {
+            Secret secret = Secret.fromString(password);
             try {
-                Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                Environments environments = new EnvironmentsImpl(emUrl, username, secret.getPlainText());
                 environments.getEnvironments();
             } catch (IOException e) {
                 // First try to re-run while appending /em
@@ -120,7 +140,7 @@ public class EnvironmentManagerBuilder extends Builder {
                     emUrl += "/em";
                 }
                 try {
-                    Environments environments = new EnvironmentsImpl(emUrl, username, password);
+                    Environments environments = new EnvironmentsImpl(emUrl, username, secret.getPlainText());
                     environments.getEnvironments();
                     return FormValidation.ok("Successfully connected to Environment Manager");
                 } catch (IOException e2) {

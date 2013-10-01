@@ -51,6 +51,10 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
     }
     
     public boolean monitorEvent(JSONObject event, EventMonitor monitor) throws IOException {
+        try {
+            Thread.sleep(1000); // Sleep at the beginning to give EM a chance to start provisioning
+        } catch (InterruptedException e1) {
+        }
         int id = event.getInt("eventId");
         monitor.logMessage("Provisioning event id: " + id);
         boolean failed = false;
