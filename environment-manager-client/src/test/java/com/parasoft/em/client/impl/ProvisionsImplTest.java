@@ -16,17 +16,17 @@
 package com.parasoft.em.client.impl;
 
 import static org.junit.Assert.*;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Provisions;
 
 public class ProvisionsImplTest {
     
-    private static String EM_URL = "http://dane.parasoft.com:8080/em";
+    private static String EM_URL = "http://dragon.parasoft.com:8080/em";
     
     @Test
     public void testGetProvisions() throws Exception {
@@ -39,30 +39,20 @@ public class ProvisionsImplTest {
     @Ignore
     public void testCreateProvisionEvent() throws Exception {
         Provisions provisions = new ProvisionsImpl(EM_URL, "admin", "admin");
-        JSONObject response = provisions.createProvisionEvent(129, 45, true);
+        JSONObject response = provisions.createProvisionEvent(28, 1, false);
         assertNotNull(response);
         
         int id = response.getInt("eventId");
         response = provisions.getProvisions(id);
         assertNotNull(response);
         System.out.println(response);
-        
-        boolean failed = false;
         response = provisions.getProvisions(id);
-        JSONArray steps = response.getJSONArray("steps");
-        for (int i = 0; i < steps.size(); i++) {
-            JSONObject step = provisions.getProvisions(id).getJSONArray("steps").getJSONObject(i);
-            System.out.println("Running step #" + (i + 1));
-            String result = step.getString("result");
-            while ("running".equals(result)) {
-                Thread.sleep(1000);
-                System.out.println(step.getString("percent") + "%");
-                step = provisions.getProvisions(id).getJSONArray("steps").getJSONObject(i);
-                result = step.getString("result");
-                failed |= "error".equals(result);
+        boolean success = provisions.monitorEvent(response, new EventMonitor(){
+            public void logMessage(String message) {
+                System.out.println(message);
             }
-        }
-        assertFalse(failed);
+        });
+        assertTrue(success);
     }
 
 }
