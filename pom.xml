@@ -5,6 +5,11 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <scm>
+    <connection>scm:git:http://stash.parasoft.com:7990/EMT/environment-manager-tools.git</connection>
+    <developerConnection>scm:git:ssh://git@stash.parasoft.com:7999/EMT/environment-manager-tools.git</developerConnection>
+  </scm>
+
   <modules>
       <module>environment-manager-client</module>
       <module>environment-manager-ant-plugin</module>

@@ -7,6 +7,10 @@
 		<version>1.509.2</version><!-- which version of Jenkins is this plugin 
 			built against? -->
 	</parent>
+    <scm>
+      <connection>scm:git:http://stash.parasoft.com:7990/EMT/environment-manager-tools.git</connection>
+      <developerConnection>scm:git:ssh://git@stash.parasoft.com:7999/EMT/environment-manager-tools.git</developerConnection>
+    </scm>
 
 	<groupId>com.parasoft</groupId>
 	<artifactId>environment-manager-jenkins-plugin</artifactId>
