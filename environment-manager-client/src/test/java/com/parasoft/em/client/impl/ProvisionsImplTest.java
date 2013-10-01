@@ -18,7 +18,6 @@ package com.parasoft.em.client.impl;
 import static org.junit.Assert.*;
 import net.sf.json.JSONObject;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.parasoft.em.client.api.EventMonitor;
@@ -26,7 +25,7 @@ import com.parasoft.em.client.api.Provisions;
 
 public class ProvisionsImplTest {
     
-    private static String EM_URL = "http://dragon.parasoft.com:8080/em";
+    private static String EM_URL = "http://dane.parasoft.com:8080/em";
     
     @Test
     public void testGetProvisions() throws Exception {
@@ -35,11 +34,9 @@ public class ProvisionsImplTest {
         assertNotNull(response);
     }
     
-    @Test
-    @Ignore
-    public void testCreateProvisionEvent() throws Exception {
+    private boolean provisionEvent(int environmentId, int instanceId) throws Exception {
         Provisions provisions = new ProvisionsImpl(EM_URL, "admin", "admin");
-        JSONObject response = provisions.createProvisionEvent(28, 1, false);
+        JSONObject response = provisions.createProvisionEvent(environmentId, instanceId, false);
         assertNotNull(response);
         
         int id = response.getInt("eventId");
@@ -47,12 +44,22 @@ public class ProvisionsImplTest {
         assertNotNull(response);
         System.out.println(response);
         response = provisions.getProvisions(id);
-        boolean success = provisions.monitorEvent(response, new EventMonitor(){
+        return provisions.monitorEvent(response, new EventMonitor(){
             public void logMessage(String message) {
                 System.out.println(message);
             }
         });
-        assertTrue(success);
     }
+    
+    @Test
+    public void testCreateProvisionEvent() throws Exception {
+        assertTrue(provisionEvent(129, 45));
+    }
+    
+    @Test
+    public void testCreateFailedProvisionEvent() throws Exception {
+        assertFalse(provisionEvent(129, 46));
+    }
+
 
 }
