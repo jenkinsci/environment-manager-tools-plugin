@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.parasoft.em.client.api.Provisions;
@@ -35,6 +36,7 @@ public class ProvisionsImplTest {
     }
     
     @Test
+    @Ignore
     public void testCreateProvisionEvent() throws Exception {
         Provisions provisions = new ProvisionsImpl(EM_URL, "admin", "admin");
         JSONObject response = provisions.createProvisionEvent(129, 45, true);
