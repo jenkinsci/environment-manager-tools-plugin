@@ -64,12 +64,17 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
             JSONObject step = getProvisions(id).getJSONArray("steps").getJSONObject(i);
             monitor.logMessage("Running step #" + (i + 1));
             String result = step.getString("result");
+            String lastPercent = "";
             while ("running".equals(result)) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                 }
-                monitor.logMessage(step.getString("percent") + "%");
+                String percent = step.getString("percent");
+                if (!lastPercent.equals(percent)) {
+                    monitor.logMessage(percent + "%");
+                    lastPercent = percent;
+                }
                 step = getProvisions(id).getJSONArray("steps").getJSONObject(i);
                 result = step.getString("result");
                 failed |= "error".equals(result);
