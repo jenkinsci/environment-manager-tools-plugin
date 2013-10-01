@@ -11,4 +11,28 @@
       <module>environment-manager-jenkins-plugin</module>
       <module>environment-manager-maven-plugin</module>
   </modules>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+            </extension>
+        </extensions>
+    </build>
+  <distributionManagement>
+    <downloadUrl>http://build.parasoft.com/maven</downloadUrl>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>ParasoftMavenPublic</id>
+      <name>Parasoft Public Repository</name>
+      <url>scp://build.parasoft.com/var/www/html/maven</url>
+    </repository>
+    <snapshotRepository>
+      <uniqueVersion>true</uniqueVersion>
+      <id>ParasoftNexusRepo</id>
+      <name>Parasoft Nexus Repository</name>
+      <url>http://nexus.parasoft.com:8081/nexus/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>

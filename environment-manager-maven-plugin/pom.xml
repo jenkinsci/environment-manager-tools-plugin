@@ -5,8 +5,13 @@
   <artifactId>environment-manager-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>environment-manager-maven-plugin Maven Mojo</name>
+  <name>environment-manager-maven-plugin</name>
   <url>http://maven.apache.org</url>
+  <parent>
+      <groupId>com.parasoft</groupId>
+      <artifactId>environment-manager-tools</artifactId>
+      <version>1.0-SNAPSHOT</version>
+  </parent>
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
