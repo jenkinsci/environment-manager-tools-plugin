@@ -8,7 +8,7 @@
 	</parent>
     <scm>
       <connection>scm:git:http://stash.parasoft.com:7990/EMT/environment-manager-tools.git</connection>
-      <developerConnection>scm:git:git://stash.parasoft.com:7999/EMT/environment-manager-tools.git</developerConnection>
+      <developerConnection>scm:git:ssh://stash.parasoft.com:7999/EMT/environment-manager-tools.git</developerConnection>
     </scm>
 
 	<groupId>com.parasoft</groupId>
