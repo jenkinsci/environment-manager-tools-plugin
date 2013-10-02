@@ -22,8 +22,10 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
+import com.parasoft.em.client.api.Environments;
 import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Provisions;
+import com.parasoft.em.client.api.Systems;
 
 public class ProvisionsImpl extends JSONClient implements Provisions {
     
@@ -55,13 +57,26 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
             Thread.sleep(1000); // Sleep at the beginning to give EM a chance to start provisioning
         } catch (InterruptedException e1) {
         }
-        int id = event.getInt("eventId");
-        monitor.logMessage("Provisioning event id: " + id);
+        Systems systems = new SystemsImpl(baseUrl, username, password);
+        Environments environments = new EnvironmentsImpl(baseUrl, username, password);
+        
+        int eventId = event.getInt("eventId");
+        int environmentId = event.getInt("environmentId");
+        int instanceId = event.getInt("instanceId");
+        JSONObject environment = environments.getEnvironment(environmentId);
+        int systemId = environment.getInt("systemId");
+        JSONObject system = systems.getSystem(systemId);
+        JSONObject instance = environments.getEnvironmentInstance(environmentId, instanceId);
+        
+        monitor.logMessage("System: " + system.getString("name"));
+        monitor.logMessage("Environment: " + environment.getString("name"));
+        monitor.logMessage("Environment Instance: " + instance.getString("name"));
+        monitor.logMessage("Provisioning event id: " + eventId);
         boolean failed = false;
-        JSONObject response = getProvisions(id);
+        JSONObject response = getProvisions(eventId);
         JSONArray steps = response.getJSONArray("steps");
         for (int i = 0; i < steps.size(); i++) {
-            JSONObject step = getProvisions(id).getJSONArray("steps").getJSONObject(i);
+            JSONObject step = getProvisions(eventId).getJSONArray("steps").getJSONObject(i);
             monitor.logMessage("Running step #" + (i + 1));
             String result = step.getString("result");
             String lastPercent = "";
@@ -75,12 +90,12 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
                     monitor.logMessage(percent + "%");
                     lastPercent = percent;
                 }
-                step = getProvisions(id).getJSONArray("steps").getJSONObject(i);
+                step = getProvisions(eventId).getJSONArray("steps").getJSONObject(i);
                 result = step.getString("result");
                 failed |= "error".equals(result);
             }
         }
-        monitor.logMessage("Completed provisioning event with id: " + id);
+        monitor.logMessage("Completed provisioning event with id: " + eventId);
         monitor.logMessage("See " + baseUrl + "environments/" + event.getInt("environmentId") + " for details");
         return !failed;
     }

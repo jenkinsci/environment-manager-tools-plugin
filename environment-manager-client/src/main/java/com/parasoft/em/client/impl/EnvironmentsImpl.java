@@ -29,9 +29,15 @@ public class EnvironmentsImpl extends JSONClient implements Environments {
     public JSONObject getEnvironments() throws IOException {
         return doGet("api/v1/environments");
     }
-
+    public JSONObject getEnvironment(int environmentId) throws IOException {
+        return doGet("api/v1/environments/" + environmentId);
+    }
     public JSONObject getEnvironmentInstances(int environmentId) throws IOException {
         return doGet("api/v1/environments/" + environmentId + "/instances");
+    }
+    public JSONObject getEnvironmentInstance(int environmentId, int instanceId)
+            throws IOException {
+        return doGet("api/v1/environments/" + environmentId + "/instances/" + instanceId);
     }
 
 }

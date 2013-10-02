@@ -42,7 +42,6 @@ public class ProvisionsImplTest {
         int id = response.getInt("eventId");
         response = provisions.getProvisions(id);
         assertNotNull(response);
-        System.out.println(response);
         response = provisions.getProvisions(id);
         return provisions.monitorEvent(response, new EventMonitor(){
             public void logMessage(String message) {

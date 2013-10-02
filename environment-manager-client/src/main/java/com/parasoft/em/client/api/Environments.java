@@ -21,5 +21,7 @@ import net.sf.json.JSONObject;
 
 public interface Environments {
     JSONObject getEnvironments() throws IOException;
+    JSONObject getEnvironment(int environmentId) throws IOException;
     JSONObject getEnvironmentInstances(int environmentId) throws IOException;
+    JSONObject getEnvironmentInstance(int environmentId, int instanceId) throws IOException;
 }

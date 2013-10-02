@@ -31,7 +31,6 @@ public class EnvironmentsImplTest {
         Environments environments = new EnvironmentsImpl(EM_URL, "admin", "admin");
         JSONObject response = environments.getEnvironments();
         assertNotNull(response);
-        System.out.println(response);
     }
     
     @Test
@@ -39,7 +38,6 @@ public class EnvironmentsImplTest {
         Environments environments = new EnvironmentsImpl(EM_URL, "admin", "admin");
         JSONObject response = environments.getEnvironmentInstances(129);
         assertNotNull(response);
-        System.out.println(response);
     }
     
 }
