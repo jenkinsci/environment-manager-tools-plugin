@@ -27,8 +27,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import com.parasoft.em.client.api.Environments;
 import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Provisions;
+import com.parasoft.em.client.api.Systems;
 import com.parasoft.em.client.impl.EnvironmentsImpl;
 import com.parasoft.em.client.impl.ProvisionsImpl;
+import com.parasoft.em.client.impl.SystemsImpl;
 
 import hudson.Extension;
 import hudson.Launcher;
@@ -42,17 +44,23 @@ import hudson.util.Secret;
 import hudson.util.ListBoxModel;
 
 public class EnvironmentManagerBuilder extends Builder {
+    private int systemId;
     private int environmentId;
     private int instanceId;
     private boolean abortOnFailure;
     
     @DataBoundConstructor
-    public EnvironmentManagerBuilder(int environmentId,
+    public EnvironmentManagerBuilder(int systemId, int environmentId,
             int instanceId, boolean abortOnFailure) {
         super();
+        this.systemId = systemId;
         this.environmentId = environmentId;
         this.instanceId = instanceId;
         this.abortOnFailure = abortOnFailure;
+    }
+    
+    public int getSystemId() {
+        return systemId;
     }
     
     public int getEnvironmentId() {
@@ -191,8 +199,30 @@ public class EnvironmentManagerBuilder extends Builder {
             save();
             return super.configure(req, json);
         }
-
-        public ListBoxModel doFillEnvironmentIdItems() {
+        
+        public ListBoxModel doFillSystemIdItems() {
+            ListBoxModel m = new ListBoxModel();
+            try {
+                if (emUrl != null) {
+                    Systems systems = new SystemsImpl(emUrl, username, password.getPlainText());
+                    JSONObject envs = systems.getSystems();
+                    JSONArray envArray = envs.getJSONArray("systems");
+                    for (Object o : envArray) {
+                        JSONObject system = (JSONObject) o;
+                        String name = system.getString("name");
+                        if (system.has("version")) {
+                            name += " (" + system.getString("version") + ")";
+                        }
+                        m.add(name, system.getString("id"));
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return m;
+        }
+        
+        public ListBoxModel doFillEnvironmentIdItems(@QueryParameter int systemId) {
             ListBoxModel m = new ListBoxModel();
             try {
                 if (emUrl != null) {
@@ -201,11 +231,13 @@ public class EnvironmentManagerBuilder extends Builder {
                     JSONArray envArray = envs.getJSONArray("environments");
                     for (Object o : envArray) {
                         JSONObject env = (JSONObject) o;
-                        String name = env.getString("name");
-                        if (env.has("version")) {
-                            name += " (" + env.getString("version") + ")";
+                        if (env.getInt("systemId") == systemId) {
+                            String name = env.getString("name");
+                            if (env.has("version")) {
+                                name += " (" + env.getString("version") + ")";
+                            }
+                            m.add(name, env.getString("id"));
                         }
-                        m.add(name, env.getString("id"));
                     }
                 }
             } catch (IOException e) {
