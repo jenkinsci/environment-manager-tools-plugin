@@ -21,12 +21,14 @@ import hudson.model.AbstractBuild;
 import hudson.tasks.test.AbstractTestResultAction;
 
 public class ProvisioningEventAction extends AbstractTestResultAction<ProvisioningEventAction> {
+    private String instanceName;
     private String environmentUrl;
     private int numberOfSteps;
     private int numberOfFailed;
     
-    protected ProvisioningEventAction(AbstractBuild owner, String environmentUrl, int numberOfSteps, int numberOfFailed) {
+    protected ProvisioningEventAction(AbstractBuild owner, String instanceName, String environmentUrl, int numberOfSteps, int numberOfFailed) {
         super(owner);
+        this.instanceName = instanceName;
         this.environmentUrl = environmentUrl;
         this.numberOfSteps = numberOfSteps;
         this.numberOfFailed = numberOfFailed;
@@ -37,7 +39,7 @@ public class ProvisioningEventAction extends AbstractTestResultAction<Provisioni
     }
 
     public String getDisplayName() {
-        return "Environment Instance";
+        return instanceName;
     }
 
     public String getUrlName() {

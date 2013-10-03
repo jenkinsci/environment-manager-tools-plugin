@@ -92,8 +92,11 @@ public class EnvironmentManagerBuilder extends Builder {
                 failed++;
             }
         }
+        
+        Environments environments = new EnvironmentsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+        JSONObject instance = environments.getEnvironmentInstance(environmentId, instanceId);
         String environmentUrl = baseUrl + "environments/" + environmentId;
-        build.addAction(new ProvisioningEventAction(build, environmentUrl, steps.size(), failed));
+        build.addAction(new ProvisioningEventAction(build, instance.getString("name"), environmentUrl, steps.size(), failed));
         return result;
     }
     
