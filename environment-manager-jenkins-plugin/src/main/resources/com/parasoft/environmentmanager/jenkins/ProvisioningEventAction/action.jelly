@@ -5,4 +5,5 @@
     <st:nbsp/>
     <st:nbsp/>
     <a href="${action.urlName}" target="_blank">${action.displayName}</a>
+    <br/>
 </j:jelly>
