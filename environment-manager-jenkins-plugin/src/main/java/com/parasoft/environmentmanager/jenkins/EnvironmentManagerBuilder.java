@@ -76,9 +76,6 @@ public class EnvironmentManagerBuilder extends Builder {
         boolean result = provisions.monitorEvent(event, new EventMonitor() {
             public void logMessage(String message) {
                 listener.getLogger().println(message);
-                if (build.getExecutor().isInterrupted()) {
-                    listener.getLogger().println("build interrupted");
-                }
             }
         });
         String baseUrl = getDescriptor().getEmUrl();
