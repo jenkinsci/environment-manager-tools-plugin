@@ -42,3 +42,12 @@ be a module available.
 into using this mechanism for maven.  It's not completely straight forward but
 it does seem achievable.
 
+
+3. Unit testing
+
+Unit tests are needed for the jenkins plugin.  The plugin has some default
+tests that were created by the maven archetype.  We need to add tests here that
+will test our functionality.  I have not done any research into how to add to
+these unit tests.
+
+See https://wiki.jenkins-ci.org/display/JENKINS/Unit+Test for help.
