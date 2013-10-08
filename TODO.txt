@@ -16,3 +16,29 @@ should be added for completeness.
 the environment manager API.  When subsequent versions are released, it will
 need to be updated for those versions. But in order to maintain backward
 compatibility, multiple versions of the client will be needed.
+
+
+2. Password encryption
+
+The jenkins plugin already encrypts user passwords using an already existing
+jenkins framework.  However the ant and maven plugins do not do any sort of
+password encryption.
+
+Here are the options for ant and maven, as I see them:
+
+2.1. Do nothing.  Users might be ok with clear text passwords in build scripts,
+often we configure a system with a generic "build" users which can be used for
+these purposes.
+
+2.2. Use the concerto encryptions mechanism.  Concerto has a hidden page which
+will encrypt passwords.  This encrypted password can then be used in the maven
+or ant build script.  This will require reusing some code that is currently in
+concerto to do the decryption.  I'm not sure how reusable this code is at the 
+moment.  May require some refactoring and/or cooperation from the Concerto
+team. On the other hand, they are building with maven now, so there may already
+be a module available.
+
+2.3. Maven does have a concept of encrypted server passwords.  I briefly looked
+into using this mechanism for maven.  It's not completely straight forward but
+it does seem achievable.
+
