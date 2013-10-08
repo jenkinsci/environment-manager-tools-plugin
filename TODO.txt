@@ -1,0 +1,18 @@
+TODO list for the environment manager integration project
+
+1. Improvements in the client
+
+1.1. The client currently receives and returns JSON objects.  This should be
+abstracted, and handwritten classes should be created.  For instance, instead
+of returning a JSON object for the Provisions#createProvisionEvent(...) method.
+It should return an Event object, which contains the relevant fields and an 
+array of Step objects.
+
+1.2. The client needs to be completed.  Initial implementation only implemented
+the API methods needed for the initial jenkins integration.  Missing methods
+should be added for completeness.
+
+1.3. The client needs to be versioned.  Currently it will only work for V1 of
+the environment manager API.  When subsequent versions are released, it will
+need to be updated for those versions. But in order to maintain backward
+compatibility, multiple versions of the client will be needed.
