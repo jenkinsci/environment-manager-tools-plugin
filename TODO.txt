@@ -45,7 +45,11 @@ it does seem achievable.
 
 3. Unit testing
 
-Unit tests are needed for the jenkins plugin.  The plugin has some default
+3.1. Unit tests on the client, are not very comprehensive.  They only do basic
+assertions and were more used for manually examining the output of the EM API.
+These should obviously be beefed up.
+
+3.2. Unit tests are needed for the jenkins plugin.  The plugin has some default
 tests that were created by the maven archetype.  We need to add tests here that
 will test our functionality.  I have not done any research into how to add to
 these unit tests.
