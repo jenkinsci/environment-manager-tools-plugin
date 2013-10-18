@@ -30,13 +30,13 @@ Here are the options for ant and maven, as I see them:
 often we configure a system with a generic "build" users which can be used for
 these purposes.
 
-2.2. Use the concerto encryptions mechanism.  Concerto has a hidden page which
-will encrypt passwords.  This encrypted password can then be used in the maven
-or ant build script.  This will require reusing some code that is currently in
-concerto to do the decryption.  I'm not sure how reusable this code is at the 
-moment.  May require some refactoring and/or cooperation from the Concerto
-team. On the other hand, they are building with maven now, so there may already
-be a module available.
+2.2. [Desired per ML] Use the concerto encryptions mechanism.  Concerto has a 
+hidden page which will encrypt passwords.  This encrypted password can then be
+used in the maven or ant build script.  This will require reusing some code 
+that is currently in concerto to do the decryption.  I'm not sure how reusable
+this code is at the moment.  May require some refactoring and/or cooperation 
+from the Concerto team. On the other hand, they are building with maven now, so 
+there may already be a module available.
 
 2.3. Maven does have a concept of encrypted server passwords.  I briefly looked
 into using this mechanism for maven.  It's not completely straight forward but
@@ -55,3 +55,9 @@ will test our functionality.  I have not done any research into how to add to
 these unit tests.
 
 See https://wiki.jenkins-ci.org/display/JENKINS/Unit+Test for help.
+
+
+4. Misc
+
+4.1 Jenkins trend graph
+4.2 Localization
