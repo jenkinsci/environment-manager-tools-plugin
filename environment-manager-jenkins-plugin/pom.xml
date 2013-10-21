@@ -14,7 +14,7 @@
 	<groupId>com.parasoft</groupId>
 	<artifactId>environment-manager-jenkins-plugin</artifactId>
     <name>Parasoft Environment Manager</name>
-	<version>1.3-SNAPSHOT</version>
+	<version>1.3</version>
 	<packaging>hpi</packaging>
 
 	<!-- get every artifact through repo.jenkins-ci.org, which proxies all the 
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>com.parasoft</groupId>
 			<artifactId>environment-manager-client</artifactId>
-			<version>1.3-SNAPSHOT</version>
+			<version>1.3</version>
 		</dependency>
 	</dependencies>
 
