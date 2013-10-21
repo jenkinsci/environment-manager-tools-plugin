@@ -28,7 +28,7 @@ public class SystemsImpl extends JSONClient implements Systems {
     }
 
     public JSONObject getSystems() throws IOException {
-        return doGet("api/v1/systems");
+        return doGet("api/v1/systems", true);
     }
 
     public JSONObject getSystem(int id) throws IOException {

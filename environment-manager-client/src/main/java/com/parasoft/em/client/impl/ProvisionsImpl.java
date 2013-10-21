@@ -45,7 +45,7 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
     }
 
     public JSONObject getProvisions() throws IOException {
-        return doGet("api/v1/provisions");
+        return doGet("api/v1/provisions", true);
     }
 
     public JSONObject getProvisions(int id) throws IOException {

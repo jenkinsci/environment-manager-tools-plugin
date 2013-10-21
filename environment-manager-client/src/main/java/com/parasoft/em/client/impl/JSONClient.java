@@ -22,7 +22,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
+import java.util.Set;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
@@ -30,6 +33,7 @@ import net.sf.json.JSONSerializer;
 import org.apache.commons.codec.binary.Base64;
 
 public class JSONClient {
+    private static int DEFAULT_LIMIT = 50;
     protected String baseUrl;
     protected String username;
     protected String password;
@@ -81,6 +85,78 @@ public class JSONClient {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("GET");
         return getResponseJSON(connection.getInputStream());
+    }
+    /**
+     * Set returnsArray to true if the API method returns a limit of items.  This
+     * will cause the call to potentially be made multiple times if there are more
+     * then 50 (current default) items that need to be returned by the EM API. 
+     * 
+     * @param restPath
+     * @param returnsArray
+     * @return
+     * @throws IOException
+     */
+    protected JSONObject doGet(String restPath, boolean returnsArray) throws IOException {
+        if (returnsArray) {
+            int offset = 0;
+            JSONObject result = doGet(addOffset(restPath, offset));
+            JSONObject iterativeResult = result;
+            while (countTopLevelItems(iterativeResult) == DEFAULT_LIMIT) {
+                iterativeResult = doGet(addOffset(restPath, offset + DEFAULT_LIMIT + 1));
+                appendResults(iterativeResult, result);
+            }
+            return result;
+        } else {
+            return doGet(restPath);
+        }
+    }
+    
+    private String addOffset(String path, int offset) {
+        return path + "?limit=" + DEFAULT_LIMIT + "&offset=" + offset;
+    }
+    
+    /**
+     * Assumes objects are of the form
+     * {
+     *     rootItem: {
+     *         {item ...},
+     *         {item2 ...},
+     *         etc   
+     *     }
+     * }
+     * 
+     * and will count the items.
+     * 
+     * @param obj
+     * @return
+     */
+    private int countTopLevelItems(JSONObject obj) {
+        if (obj.values().size() == 1) {
+            Object rootItem = obj.values().iterator().next();
+            if(rootItem instanceof JSONArray) {
+                JSONArray array = (JSONArray) rootItem;
+                return array.size();
+            }
+        }
+        return obj.values().size();
+    }
+    
+    /**
+     * Assumes that each object contains a single named element of
+     * type array.
+     * 
+     * @param source
+     * @param dest
+     */
+    private void appendResults(JSONObject source, JSONObject dest) {
+        if (dest.values().size() == 1) {
+            Set<Map.Entry<String, Object>> entries = dest.entrySet();
+            Map.Entry<String, Object> entry = entries.iterator().next();
+            
+            String name = entry.getKey();
+            JSONArray array = (JSONArray) entry.getValue();
+            array.addAll(source.getJSONArray(name));
+        }
     }
     
     protected JSONObject doPost(String restPath, JSONObject payload) throws IOException {
