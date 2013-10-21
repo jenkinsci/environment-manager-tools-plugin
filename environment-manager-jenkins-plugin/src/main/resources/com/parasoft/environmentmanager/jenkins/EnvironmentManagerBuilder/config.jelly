@@ -18,7 +18,7 @@
   <f:entry title="Instance Name" field="instanceId">
     <f:select />
   </f:entry>
-  <f:entry title="Abort On Failure" field="abortOnFailure">
+  <f:entry title="Abort On Provisioning Failure" field="abortOnFailure">
     <f:checkbox />
   </f:entry>
 </j:jelly>
