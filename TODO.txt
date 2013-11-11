@@ -1,6 +1,8 @@
 TODO list for the environment manager integration project
+========================================================
 
 1. Improvements in the client
+-----------------------------
 
 1.1. The client currently receives and returns JSON objects.  This should be
 abstracted, and handwritten classes should be created.  For instance, instead
@@ -19,6 +21,7 @@ compatibility, multiple versions of the client will be needed.
 
 
 2. Password encryption
+----------------------
 
 The jenkins plugin already encrypts user passwords using an already existing
 jenkins framework.  However the ant and maven plugins do not do any sort of
@@ -44,6 +47,7 @@ it does seem achievable.
 
 
 3. Unit testing
+---------------
 
 3.1. Unit tests on the client, are not very comprehensive.  They only do basic
 assertions and were more used for manually examining the output of the EM API.
@@ -58,6 +62,7 @@ See https://wiki.jenkins-ci.org/display/JENKINS/Unit+Test for help.
 
 
 4. Misc
+-------
 
 4.1 Jenkins trend graph
 4.2 Localization
