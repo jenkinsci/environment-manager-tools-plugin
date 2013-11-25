@@ -65,7 +65,7 @@ public class JSONClient {
     }
     
     private JSONObject getResponseJSON(InputStream stream) throws IOException {
-        BufferedReader in = new BufferedReader (new InputStreamReader (stream));
+        BufferedReader in = new BufferedReader (new InputStreamReader (stream, "UTF-8"));
         try {
             StringBuilder result = new StringBuilder();
             String line;
