@@ -18,6 +18,7 @@ package com.parasoft.em.client.impl;
 import static org.junit.Assert.*;
 import net.sf.json.JSONObject;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.parasoft.em.client.api.EventMonitor;
@@ -51,11 +52,13 @@ public class ProvisionsImplTest {
     }
     
     @Test
+    @Ignore
     public void testCreateProvisionEvent() throws Exception {
         assertTrue(provisionEvent(129, 45));
     }
     
     @Test
+    @Ignore
     public void testCreateFailedProvisionEvent() throws Exception {
         assertFalse(provisionEvent(129, 46));
     }
