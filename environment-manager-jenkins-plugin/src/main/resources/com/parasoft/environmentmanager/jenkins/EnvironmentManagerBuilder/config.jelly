@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <!--
     This jelly script is used for per-project configuration.
@@ -9,6 +10,8 @@
     Creates a text field that shows the value of the "name" property.
     When submitted, it will be passed to the corresponding constructor parameter.
   -->
+  <f:block>
+    <table>
   <f:entry title="System Name" field="systemId">
     <f:select />
   </f:entry>
@@ -18,7 +21,20 @@
   <f:entry title="Instance Name" field="instanceId">
     <f:select />
   </f:entry>
-  <f:entry title="Abort On Provisioning Failure" field="abortOnFailure">
-    <f:checkbox />
-  </f:entry>
+    </table>
+  </f:block>
+  <f:block>
+    <table>
+      <f:optionalBlock name="copyToServer" title="Copy the environment assets to another Virtualize server" checked="${instance.copyToServer}" inline="true">
+        <f:entry title="Virtualize server" field="serverId">
+          <f:select />
+        </f:entry>
+        <f:entry title="New Environment Name" field="newEnvironmentName">
+          <f:textbox  />
+        </f:entry>
+      </f:optionalBlock>
+      <f:optionalBlock title="Abort on provisioning failure" field="abortOnFailure" inline="true">
+      </f:optionalBlock>
+    </table>
+  </f:block>
 </j:jelly>

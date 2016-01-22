@@ -26,7 +26,7 @@ import com.parasoft.em.client.api.Provisions;
 
 public class ProvisionsImplTest {
     
-    private static String EM_URL = "http://dane.parasoft.com:8080/em";
+    private static String EM_URL = "http://localhost:8080/em";
     
     @Test
     public void testGetProvisions() throws Exception {
@@ -54,13 +54,13 @@ public class ProvisionsImplTest {
     @Test
     @Ignore
     public void testCreateProvisionEvent() throws Exception {
-        assertTrue(provisionEvent(129, 45));
+        assertTrue(provisionEvent(1, 1));
     }
     
     @Test
     @Ignore
     public void testCreateFailedProvisionEvent() throws Exception {
-        assertFalse(provisionEvent(129, 46));
+        assertFalse(provisionEvent(1, 2));
     }
 
 

@@ -176,6 +176,8 @@ public class JSONClient {
     }
     
     protected JSONObject doDelete(String restPath) throws IOException {
-        return null;
+        HttpURLConnection connection = getConnection(restPath);
+        connection.setRequestMethod("DELETE");
+        return getResponseJSON(connection.getInputStream());
     }
 }

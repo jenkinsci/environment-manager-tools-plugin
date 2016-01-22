@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <!-- This is used to overwrite the default action.jelly
      The only reason for it is to allow us to open our link in a new window/tab in the browser -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">

@@ -21,7 +21,7 @@ import org.junit.Test;
 import com.parasoft.em.client.api.Systems;
 
 public class SystemsImplTest {
-    private static String EM_URL = "http://dane.parasoft.com:8080/em";
+    private static String EM_URL = "http://localhost:8080/em";
     
     @Test
     public void testSystems() throws Exception {
@@ -33,7 +33,7 @@ public class SystemsImplTest {
     @Test
     public void testSystem() throws Exception {
         Systems systems = new SystemsImpl(EM_URL, "admin", "admin");
-        JSONObject result = systems.getSystem(59);
+        JSONObject result = systems.getSystem(1);
         assertNotNull(result);
     }
 }

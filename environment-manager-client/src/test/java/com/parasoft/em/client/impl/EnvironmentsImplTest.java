@@ -24,7 +24,7 @@ import com.parasoft.em.client.api.Environments;
 
 public class EnvironmentsImplTest {
     
-    private static String EM_URL = "http://dane.parasoft.com:8080/em";
+    private static String EM_URL = "http://localhost:8080/em";
     
     @Test
     public void getEnvironments() throws Exception {
@@ -36,7 +36,7 @@ public class EnvironmentsImplTest {
     @Test
     public void getEnvironmentsInstances() throws Exception {
         Environments environments = new EnvironmentsImpl(EM_URL, "admin", "admin");
-        JSONObject response = environments.getEnvironmentInstances(129);
+        JSONObject response = environments.getEnvironmentInstances(1);
         assertNotNull(response);
     }
     
