@@ -12,26 +12,44 @@
   -->
   <f:block>
     <table>
-  <f:entry title="System Name" field="systemId">
+  <f:entry title="System" field="systemId">
     <f:select />
   </f:entry>
-  <f:entry title="Environment Name" field="environmentId">
+  <f:entry title="Environment" field="environmentId">
     <f:select />
   </f:entry>
-  <f:entry title="Instance Name" field="instanceId">
+  <f:entry title="Instance" field="instanceId">
     <f:select />
   </f:entry>
     </table>
   </f:block>
   <f:block>
     <table>
-      <f:optionalBlock name="copyToServer" title="Copy the environment assets to another Virtualize server" checked="${instance.copyToServer}" inline="true">
-        <f:entry title="Virtualize server" field="serverId">
-          <f:select />
-        </f:entry>
-        <f:entry title="New Environment Name" field="newEnvironmentName">
+      <f:optionalBlock name="copyToServer" title="Copy the environment and assets before provisioning" checked="${instance.copyToServer}" inline="true">
+        <f:entry title="New environment name" field="newEnvironmentName">
           <f:textbox  />
         </f:entry>
+        <f:nested>
+          <f:radio name="serverType" title="To a Virtualize server registered with EM" value="registered" checked="${instance.isServerType('registered')}" inline="true">
+          </f:radio>
+          <f:entry title="Virtualize server" field="serverId">
+            <f:select />
+          </f:entry>
+        </f:nested>
+        <f:nested>
+          <f:radio name="serverType" title="To a Virtualize server matching host" value="host" checked="${instance.isServerType('host')}" inline="true">
+          </f:radio>
+          <f:entry title="Virtualize host" field="serverHost">
+            <f:textbox  />
+          </f:entry>
+        </f:nested>
+        <f:nested>
+          <f:radio name="serverType" title="To a Virtualize server matching name" value="name" checked="${instance.isServerType('name')}" inline="true">
+          </f:radio>
+          <f:entry title="Virtualize name" field="serverName">
+            <f:textbox  />
+          </f:entry>
+        </f:nested>
       </f:optionalBlock>
       <f:optionalBlock title="Abort on provisioning failure" field="abortOnFailure" inline="true">
       </f:optionalBlock>

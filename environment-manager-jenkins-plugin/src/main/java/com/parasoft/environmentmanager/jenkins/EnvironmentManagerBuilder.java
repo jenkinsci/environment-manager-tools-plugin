@@ -36,6 +36,7 @@ import com.parasoft.em.client.impl.ProvisionsImpl;
 import com.parasoft.em.client.impl.ServersImpl;
 import com.parasoft.em.client.impl.SystemsImpl;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -52,8 +53,11 @@ public class EnvironmentManagerBuilder extends Builder {
     private int environmentId;
     private int instanceId;
     private boolean copyToServer;
-    private int serverId;
     private String newEnvironmentName;
+    private String serverType;
+    private int serverId;
+    private String serverHost;
+    private String serverName;
     private boolean abortOnFailure;
     
     @DataBoundConstructor
@@ -62,8 +66,11 @@ public class EnvironmentManagerBuilder extends Builder {
         int environmentId,
         int instanceId,
         boolean copyToServer,
-        int serverId,
         String newEnvironmentName,
+        String serverType,
+        int serverId,
+        String serverHost,
+        String serverName,
         boolean abortOnFailure)
     {
         super();
@@ -71,8 +78,11 @@ public class EnvironmentManagerBuilder extends Builder {
         this.environmentId = environmentId;
         this.instanceId = instanceId;
         this.copyToServer = copyToServer;
-        this.serverId = serverId;
         this.newEnvironmentName = newEnvironmentName;
+        this.serverType = serverType;
+        this.serverId = serverId;
+        this.serverHost = serverHost;
+        this.serverName = serverName;
         this.abortOnFailure = abortOnFailure;
     }
     
@@ -92,12 +102,27 @@ public class EnvironmentManagerBuilder extends Builder {
         return copyToServer;
     }
     
+    public String getNewEnvironmentName() {
+        return newEnvironmentName;
+    }
+    
+    public boolean isServerType(String type) {
+        if ((serverType == null) || serverType.isEmpty()) {
+            return "registered".equals(type);
+        }
+        return serverType.equals(type);
+    }
+    
     public int getServerId() {
         return serverId;
     }
     
-    public String getNewEnvironmentName() {
-        return newEnvironmentName;
+    public String getServerHost() {
+        return serverHost;
+    }
+    
+    public String getServerName() {
+        return serverName;
     }
     
     public boolean isAbortOnFailure() {
@@ -108,13 +133,56 @@ public class EnvironmentManagerBuilder extends Builder {
     public boolean perform(final AbstractBuild<?, ?> build, Launcher launcher,
             final BuildListener listener) throws InterruptedException, IOException
     {
+        EnvVars envVars = build.getEnvironment(listener);
         int targetEnvironmentId = environmentId;
         int targetInstanceId = instanceId;
         Environments environments = new EnvironmentsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
         JSONObject instance = environments.getEnvironmentInstance(environmentId, instanceId);
         if (copyToServer) {
+            int targetServerId = 0;
+            String targetServerName = envVars.expand(serverName);
+            String targetServerHost = envVars.expand(serverHost);
+            if (isServerType("registered")) {
+                targetServerId = serverId;
+            } else {
+                Servers servers = new ServersImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+                JSONObject response = servers.getServers();
+                if (response.has("servers")) {
+                    JSONArray envArray = response.getJSONArray("servers");
+                    for (Object o : envArray) {
+                        JSONObject server = (JSONObject) o;
+                        if (isServerType("name")) {
+                            String name = server.getString("name");
+                            if (name.indexOf(targetServerName) >= 0) {
+                                serverId = server.getInt("id");
+                            }
+                            if (name.equalsIgnoreCase(targetServerName)) {
+                                break;
+                            }
+                        } else if (isServerType("host")) {
+                            String host = server.getString("host");
+                            if (host.indexOf(targetServerHost) >= 0) {
+                                serverId = server.getInt("id");
+                            }
+                            if (host.equalsIgnoreCase(targetServerHost)) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (targetServerId == 0) {
+                String errorMessage = "ERROR:  Could not find any Virtualize servers matching ";
+                if (isServerType("name")) {
+                    errorMessage += "name:  " + targetServerName;
+                } else if (isServerType("host")) {
+                    errorMessage += "host:  " + targetServerHost;
+                }
+                listener.getLogger().println(errorMessage);
+                return false;
+            }
             EnvironmentCopy environmentCopy = new EnvironmentCopyImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
-            JSONObject copyEvent = environmentCopy.createEnvironmentCopy(environmentId, serverId, newEnvironmentName);
+            JSONObject copyEvent = environmentCopy.createEnvironmentCopy(environmentId, targetServerId, envVars.expand(newEnvironmentName));
             boolean copyResult = environmentCopy.monitorEvent(copyEvent, new EventMonitor() {
                 public void logMessage(String message) {
                     listener.getLogger().println(message);
@@ -329,9 +397,9 @@ public class EnvironmentManagerBuilder extends Builder {
             try {
                 if (emUrl != null) {
                     Servers servers = new ServersImpl(emUrl, username, password.getPlainText());
-                    JSONObject envs = servers.getServers();
-                    if (envs.has("servers")) {
-                        JSONArray envArray = envs.getJSONArray("servers");
+                    JSONObject response = servers.getServers();
+                    if (response.has("servers")) {
+                        JSONArray envArray = response.getJSONArray("servers");
                         for (Object o : envArray) {
                             JSONObject server = (JSONObject) o;
                             String name = server.getString("name");
