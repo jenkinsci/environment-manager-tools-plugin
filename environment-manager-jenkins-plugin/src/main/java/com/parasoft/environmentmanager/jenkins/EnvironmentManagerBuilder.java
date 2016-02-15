@@ -263,14 +263,16 @@ public class EnvironmentManagerBuilder extends Builder {
                 if (emUrl != null) {
                     Systems systems = new SystemsImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = systems.getSystems();
-                    JSONArray envArray = envs.getJSONArray("systems");
-                    for (Object o : envArray) {
-                        JSONObject system = (JSONObject) o;
-                        String name = system.getString("name");
-                        if (system.has("version")) {
-                            name += " (" + system.getString("version") + ")";
+                    if (envs.has("systems")) {
+                        JSONArray envArray = envs.getJSONArray("systems");
+                        for (Object o : envArray) {
+                            JSONObject system = (JSONObject) o;
+                            String name = system.getString("name");
+                            if (system.has("version")) {
+                                name += " (" + system.getString("version") + ")";
+                            }
+                            m.add(name, system.getString("id"));
                         }
-                        m.add(name, system.getString("id"));
                     }
                 }
             } catch (IOException e) {
@@ -285,15 +287,17 @@ public class EnvironmentManagerBuilder extends Builder {
                 if (emUrl != null) {
                     Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = environments.getEnvironments();
-                    JSONArray envArray = envs.getJSONArray("environments");
-                    for (Object o : envArray) {
-                        JSONObject env = (JSONObject) o;
-                        if (env.getInt("systemId") == systemId) {
-                            String name = env.getString("name");
-                            if (env.has("version")) {
-                                name += " (" + env.getString("version") + ")";
+                    if (envs.has("environments")) {
+                        JSONArray envArray = envs.getJSONArray("environments");
+                        for (Object o : envArray) {
+                            JSONObject env = (JSONObject) o;
+                            if (env.getInt("systemId") == systemId) {
+                                String name = env.getString("name");
+                                if (env.has("version")) {
+                                    name += " (" + env.getString("version") + ")";
+                                }
+                                m.add(name, env.getString("id"));
                             }
-                            m.add(name, env.getString("id"));
                         }
                     }
                 }
@@ -326,15 +330,17 @@ public class EnvironmentManagerBuilder extends Builder {
                 if (emUrl != null) {
                     Servers servers = new ServersImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = servers.getServers();
-                    JSONArray envArray = envs.getJSONArray("servers");
-                    for (Object o : envArray) {
-                        JSONObject server = (JSONObject) o;
-                        String name = server.getString("name");
-                        String host = server.getString("host");
-                        if (!name.equals(host)) {
-                            name += " (" + host + ':' + server.getInt("port") + ')';
+                    if (envs.has("servers")) {
+                        JSONArray envArray = envs.getJSONArray("servers");
+                        for (Object o : envArray) {
+                            JSONObject server = (JSONObject) o;
+                            String name = server.getString("name");
+                            String host = server.getString("host");
+                            if (!name.equals(host)) {
+                                name += " (" + host + ':' + server.getInt("port") + ')';
+                            }
+                            m.add(name, server.getString("id"));
                         }
-                        m.add(name, server.getString("id"));
                     }
                 }
             } catch (IOException e) {
