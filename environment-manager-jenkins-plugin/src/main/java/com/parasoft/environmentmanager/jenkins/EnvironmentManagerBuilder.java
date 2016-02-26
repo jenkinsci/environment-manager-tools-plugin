@@ -1,18 +1,10 @@
 /*
- * $RCSfile$
- * $Revision$
- *
- * Comments:
- *
  * (C) Copyright ParaSoft Corporation 2013.  All rights reserved.
  * THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF ParaSoft
  * The copyright notice above does not evidence any
  * actual or intended publication of such source code.
- *
- * $Author$          $Locker$
- * $Date$
- * $Log$
  */
+
 package com.parasoft.environmentmanager.jenkins;
 
 import java.io.IOException;
@@ -154,7 +146,7 @@ public class EnvironmentManagerBuilder extends Builder {
                         if (isServerType("name")) {
                             String name = server.getString("name");
                             if (name.indexOf(targetServerName) >= 0) {
-                                serverId = server.getInt("id");
+                                targetServerId = server.getInt("id");
                             }
                             if (name.equalsIgnoreCase(targetServerName)) {
                                 break;
@@ -162,7 +154,7 @@ public class EnvironmentManagerBuilder extends Builder {
                         } else if (isServerType("host")) {
                             String host = server.getString("host");
                             if (host.indexOf(targetServerHost) >= 0) {
-                                serverId = server.getInt("id");
+                                targetServerId = server.getInt("id");
                             }
                             if (host.equalsIgnoreCase(targetServerHost)) {
                                 break;
