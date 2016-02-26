@@ -137,41 +137,57 @@ public class EnvironmentManagerBuilder extends Builder {
             if (isServerType("registered")) {
                 targetServerId = serverId;
             } else {
-                Servers servers = new ServersImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
-                JSONObject response = servers.getServers();
-                if (response.has("servers")) {
-                    JSONArray envArray = response.getJSONArray("servers");
-                    for (Object o : envArray) {
-                        JSONObject server = (JSONObject) o;
-                        if (isServerType("name")) {
-                            String name = server.getString("name");
-                            if (name.indexOf(targetServerName) >= 0) {
-                                targetServerId = server.getInt("id");
-                            }
-                            if (name.equalsIgnoreCase(targetServerName)) {
-                                break;
-                            }
-                        } else if (isServerType("host")) {
-                            String host = server.getString("host");
-                            if (host.indexOf(targetServerHost) >= 0) {
-                                targetServerId = server.getInt("id");
-                            }
-                            if (host.equalsIgnoreCase(targetServerHost)) {
-                                break;
+                boolean waitingNotFoundMessageShown = false;
+                boolean waitingOfflineMessageShown = false;
+                String status = null;
+                while (targetServerId == 0) {
+                    Servers servers = new ServersImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+                    JSONObject response = servers.getServers();
+                    if (response.has("servers")) {
+                        JSONArray envArray = response.getJSONArray("servers");
+                        for (Object o : envArray) {
+                            JSONObject server = (JSONObject) o;
+                            if (isServerType("name")) {
+                                String name = server.getString("name");
+                                if (name.indexOf(targetServerName) >= 0) {
+                                    targetServerId = server.getInt("id");
+                                    status = server.optString("status");
+                                }
+                                if (name.equalsIgnoreCase(targetServerName)) {
+                                    break;
+                                }
+                            } else if (isServerType("host")) {
+                                String host = server.getString("host");
+                                if (host.indexOf(targetServerHost) >= 0) {
+                                    targetServerId = server.getInt("id");
+                                    status = server.optString("status");
+                                }
+                                if (host.equalsIgnoreCase(targetServerHost)) {
+                                    break;
+                                }
                             }
                         }
                     }
+                    if ((targetServerId == 0) && !waitingNotFoundMessageShown) {
+                        String errorMessage = "WARNING:  Could not find any Virtualize servers matching ";
+                        if (isServerType("name")) {
+                            errorMessage += "name:  " + targetServerName;
+                        } else if (isServerType("host")) {
+                            errorMessage += "host:  " + targetServerHost;
+                        }
+                        listener.getLogger().println(errorMessage);
+                        listener.getLogger().println("Waiting for a machting Virtualize server to register with EM...");
+                        waitingNotFoundMessageShown = true;
+                    }
+                    if ("OFFLINE".equals(status) || "REFRESHING".equals(status)) {
+                        targetServerId = 0;
+                        if (!waitingOfflineMessageShown) {
+                            listener.getLogger().println("Waiting for Virtualize server to come online...");
+                            waitingOfflineMessageShown = true;
+                        }
+                    }
+                    Thread.sleep(10000); // try again in 10 seconds
                 }
-            }
-            if (targetServerId == 0) {
-                String errorMessage = "ERROR:  Could not find any Virtualize servers matching ";
-                if (isServerType("name")) {
-                    errorMessage += "name:  " + targetServerName;
-                } else if (isServerType("host")) {
-                    errorMessage += "host:  " + targetServerHost;
-                }
-                listener.getLogger().println(errorMessage);
-                return false;
             }
             EnvironmentCopy environmentCopy = new EnvironmentCopyImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
             JSONObject copyEvent = environmentCopy.createEnvironmentCopy(environmentId, targetServerId, envVars.expand(newEnvironmentName));
