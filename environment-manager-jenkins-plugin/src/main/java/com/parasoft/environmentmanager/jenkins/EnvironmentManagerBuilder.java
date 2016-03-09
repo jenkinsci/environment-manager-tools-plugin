@@ -50,6 +50,12 @@ public class EnvironmentManagerBuilder extends Builder {
     private int serverId;
     private String serverHost;
     private String serverName;
+    private boolean copyDataRepo;
+    private String repoType;
+    private String repoHost;
+    private int repoPort;
+    private String repoUsername;
+    private String repoPassword;
     private boolean abortOnFailure;
     
     @DataBoundConstructor
@@ -63,6 +69,12 @@ public class EnvironmentManagerBuilder extends Builder {
         int serverId,
         String serverHost,
         String serverName,
+        boolean copyDataRepo,
+        String repoType,
+        String repoHost,
+        int repoPort,
+        String repoUsername,
+        String repoPassword,
         boolean abortOnFailure)
     {
         super();
@@ -75,6 +87,12 @@ public class EnvironmentManagerBuilder extends Builder {
         this.serverId = serverId;
         this.serverHost = serverHost;
         this.serverName = serverName;
+        this.copyDataRepo = copyDataRepo;
+        this.repoType = repoType;
+        this.repoHost = repoHost;
+        this.repoPort = repoPort;
+        this.repoUsername = repoUsername;
+        this.repoPassword = repoPassword;
         this.abortOnFailure = abortOnFailure;
     }
     
@@ -117,6 +135,33 @@ public class EnvironmentManagerBuilder extends Builder {
         return serverName;
     }
     
+    public boolean isCopyDataRepo() {
+        return copyDataRepo;
+    }
+    
+    public boolean isRepoType(String type) {
+        if ((repoType == null) || repoType.isEmpty()) {
+            return "current".equals(type);
+        }
+        return repoType.equals(type);
+    }
+    
+    public String getRepoHost() {
+        return repoHost;
+    }
+    
+    public int getRepoPort() {
+        return repoPort == 0 ? 2424 : repoPort;
+    }
+    
+    public String getRepoUsername() {
+        return repoUsername == null ? "admin" : repoUsername;
+    }
+    
+    public String getRepoPassword() {
+        return repoPassword == null ? "admin" : repoPassword;
+    }
+    
     public boolean isAbortOnFailure() {
         return abortOnFailure;
     }
@@ -131,66 +176,87 @@ public class EnvironmentManagerBuilder extends Builder {
         Environments environments = new EnvironmentsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
         JSONObject instance = environments.getEnvironmentInstance(environmentId, instanceId);
         if (copyToServer) {
+            JSONObject targetServer = null;
             int targetServerId = 0;
             String targetServerName = envVars.expand(serverName);
             String targetServerHost = envVars.expand(serverHost);
-            if (isServerType("registered")) {
-                targetServerId = serverId;
-            } else {
-                boolean waitingNotFoundMessageShown = false;
-                boolean waitingOfflineMessageShown = false;
-                String status = null;
-                while (targetServerId == 0) {
-                    Servers servers = new ServersImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
-                    JSONObject response = servers.getServers();
-                    if (response.has("servers")) {
-                        JSONArray envArray = response.getJSONArray("servers");
-                        for (Object o : envArray) {
-                            JSONObject server = (JSONObject) o;
-                            if (isServerType("name")) {
-                                String name = server.getString("name");
-                                if (name.indexOf(targetServerName) >= 0) {
-                                    targetServerId = server.getInt("id");
-                                    status = server.optString("status");
-                                }
-                                if (name.equalsIgnoreCase(targetServerName)) {
-                                    break;
-                                }
-                            } else if (isServerType("host")) {
-                                String host = server.getString("host");
-                                if (host.indexOf(targetServerHost) >= 0) {
-                                    targetServerId = server.getInt("id");
-                                    status = server.optString("status");
-                                }
-                                if (host.equalsIgnoreCase(targetServerHost)) {
-                                    break;
-                                }
+            boolean waitingNotFoundMessageShown = false;
+            boolean waitingOfflineMessageShown = false;
+            String status = null;
+            while (targetServerId == 0) {
+                if (isServerType("registered")) {
+                    targetServerId = serverId;
+                }
+                Servers servers = new ServersImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+                JSONObject response = servers.getServers();
+                if (response.has("servers")) {
+                    JSONArray envArray = response.getJSONArray("servers");
+                    for (Object o : envArray) {
+                        JSONObject server = (JSONObject) o;
+                        if (isServerType("registered")) {
+                            int id = server.getInt("id");
+                            if (id == serverId) {
+                                targetServer = server;
+                                status = server.optString("status");
+                            }
+                        } else if (isServerType("name")) {
+                            String name = server.getString("name");
+                            if (name.indexOf(targetServerName) >= 0) {
+                                targetServerId = server.getInt("id");
+                                targetServer = server;
+                                status = server.optString("status");
+                            }
+                            if (name.equalsIgnoreCase(targetServerName)) {
+                                break;
+                            }
+                        } else if (isServerType("host")) {
+                            String host = server.getString("host");
+                            if (host.indexOf(targetServerHost) >= 0) {
+                                targetServerId = server.getInt("id");
+                                targetServer = server;
+                                status = server.optString("status");
+                            }
+                            if (host.equalsIgnoreCase(targetServerHost)) {
+                                break;
                             }
                         }
                     }
-                    if ((targetServerId == 0) && !waitingNotFoundMessageShown) {
-                        String errorMessage = "WARNING:  Could not find any Virtualize servers matching ";
-                        if (isServerType("name")) {
-                            errorMessage += "name:  " + targetServerName;
-                        } else if (isServerType("host")) {
-                            errorMessage += "host:  " + targetServerHost;
-                        }
-                        listener.getLogger().println(errorMessage);
-                        listener.getLogger().println("Waiting for a machting Virtualize server to register with EM...");
-                        waitingNotFoundMessageShown = true;
-                    }
-                    if ("OFFLINE".equals(status) || "REFRESHING".equals(status)) {
-                        targetServerId = 0;
-                        if (!waitingOfflineMessageShown) {
-                            listener.getLogger().println("Waiting for Virtualize server to come online...");
-                            waitingOfflineMessageShown = true;
-                        }
-                    }
-                    Thread.sleep(10000); // try again in 10 seconds
                 }
+                if ((targetServerId == 0) && !waitingNotFoundMessageShown) {
+                    String errorMessage = "WARNING:  Could not find any Virtualize servers matching ";
+                    if (isServerType("name")) {
+                        errorMessage += "name:  " + targetServerName;
+                    } else if (isServerType("host")) {
+                        errorMessage += "host:  " + targetServerHost;
+                    }
+                    listener.getLogger().println(errorMessage);
+                    listener.getLogger().println("Waiting for a machting Virtualize server to register with EM...");
+                    waitingNotFoundMessageShown = true;
+                }
+                if ("OFFLINE".equals(status) || "REFRESHING".equals(status)) {
+                    targetServerId = 0;
+                    if (!waitingOfflineMessageShown) {
+                        listener.getLogger().println("Waiting for Virtualize server to come online...");
+                        waitingOfflineMessageShown = true;
+                    }
+                }
+                Thread.sleep(10000); // try again in 10 seconds
             }
             EnvironmentCopy environmentCopy = new EnvironmentCopyImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
-            JSONObject copyEvent = environmentCopy.createEnvironmentCopy(environmentId, targetServerId, envVars.expand(newEnvironmentName));
+            JSONObject dataRepoSettings = null;
+            if (isRepoType("target")) {
+                dataRepoSettings = new JSONObject();
+                dataRepoSettings.put("host", targetServer.getString("host"));
+            } else if (isRepoType("custom")) {
+                dataRepoSettings = new JSONObject();
+                dataRepoSettings.put("host", getRepoHost());
+            }
+            if (dataRepoSettings != null) {
+                dataRepoSettings.put("port", getRepoPort());
+                dataRepoSettings.put("username", getRepoUsername());
+                dataRepoSettings.put("password", getRepoPassword());
+            }
+            JSONObject copyEvent = environmentCopy.createEnvironmentCopy(environmentId, targetServerId, envVars.expand(newEnvironmentName), copyDataRepo, dataRepoSettings);
             boolean copyResult = environmentCopy.monitorEvent(copyEvent, new EventMonitor() {
                 public void logMessage(String message) {
                     listener.getLogger().println(message);

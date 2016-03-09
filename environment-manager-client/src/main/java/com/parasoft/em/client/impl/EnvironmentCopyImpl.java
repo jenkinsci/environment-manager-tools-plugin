@@ -23,7 +23,9 @@ public class EnvironmentCopyImpl extends JSONClient implements EnvironmentCopy {
         super(emUrl, username, password);
     }
 
-    public JSONObject createEnvironmentCopy(int environmentId, int serverId, String newEnvironmentName) throws IOException {
+    public JSONObject createEnvironmentCopy(int environmentId, int serverId, String newEnvironmentName, boolean copyDataRepo, JSONObject dataRepoSettings)
+        throws IOException
+    {
         JSONObject payload = new JSONObject();
         try {
             payload.put("originalEnvId", environmentId);
@@ -31,7 +33,10 @@ public class EnvironmentCopyImpl extends JSONClient implements EnvironmentCopy {
             if ((newEnvironmentName != null) && !newEnvironmentName.trim().isEmpty()) {
                 payload.put("newEnvironmentName", newEnvironmentName);
             }
-            payload.put("copyDataRepo", false);
+            payload.put("copyDataRepo", copyDataRepo);
+            if (dataRepoSettings != null) {
+                payload.put("dataRepoSettings", dataRepoSettings);
+            }
         } catch (JSONException e) {
         }
         return doPost("api/v2/environments/copy", payload);

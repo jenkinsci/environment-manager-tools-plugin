@@ -51,6 +51,32 @@
           </f:entry>
         </f:nested>
       </f:optionalBlock>
+      <f:optionalBlock name="copyDataRepo" title="Duplicate associated data repositories before provisioning" checked="${instance.copyDataRepo}" inline="true">
+        <f:nested>
+          <f:radio name="repoType" title="In-place on the current Data Repository server" value="current" checked="${instance.isRepoType('current')}" inline="true">
+          </f:radio>
+        </f:nested>
+        <f:nested>
+          <f:radio name="repoType" title="To a Data Repository server on the same host as the target Virtualize server" value="target" checked="${instance.isRepoType('target')}" inline="true">
+          </f:radio>
+        </f:nested>
+        <f:nested>
+          <f:radio name="repoType" title="To a Data Repository server on a specific host" value="custom" checked="${instance.isRepoType('custom')}" inline="true">
+          </f:radio>
+          <f:entry title="Repository host" field="repoHost">
+            <f:textbox  />
+          </f:entry>
+          <f:entry title="Repository port" field="repoPort">
+            <f:number  />
+          </f:entry>
+          <f:entry title="Repository username" field="repoUsername">
+            <f:textbox  />
+          </f:entry>
+          <f:entry title="Repository password" field="repoPassword">
+            <f:password  />
+          </f:entry>
+        </f:nested>
+      </f:optionalBlock>
       <f:optionalBlock title="Abort on provisioning failure" field="abortOnFailure" inline="true">
       </f:optionalBlock>
     </table>

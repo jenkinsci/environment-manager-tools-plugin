@@ -12,7 +12,7 @@ import java.io.IOException;
 import net.sf.json.JSONObject;
 
 public interface EnvironmentCopy {
-    JSONObject createEnvironmentCopy(int environmentId, int serverId, String newEnvironmentName) throws IOException;
+    JSONObject createEnvironmentCopy(int environmentId, int serverId, String newEnvironmentName, boolean copyDataRepo, JSONObject dataRepoSettings) throws IOException;
     JSONObject getCopyStatus(int id) throws IOException;
     JSONObject removeCopyStatus(int id) throws IOException;
     boolean monitorEvent(JSONObject event, EventMonitor monitor) throws IOException;

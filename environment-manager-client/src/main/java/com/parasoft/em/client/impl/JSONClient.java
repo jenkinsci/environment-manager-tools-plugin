@@ -81,6 +81,20 @@ public class JSONClient {
         return null;
     }
     
+    private String getResponseString(InputStream stream) throws IOException {
+        BufferedReader in = new BufferedReader (new InputStreamReader (stream, "UTF-8"));
+        try {
+            StringBuilder result = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                result.append(line);
+            }
+            return result.toString();
+        } finally {
+            in.close();
+        }
+    }
+    
     protected JSONObject doGet(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("GET");
@@ -172,7 +186,13 @@ public class JSONClient {
                 stream.close();
             }
         }
-        return getResponseJSON(connection.getInputStream());
+        int responseCode = connection.getResponseCode();
+        if (responseCode / 100 == 2) {
+            return getResponseJSON(connection.getInputStream());
+        } else {
+            String errorMessage = getResponseString(connection.getErrorStream());
+            throw new IOException(restPath + ' ' + responseCode + '\n' + errorMessage);
+        }
     }
     
     protected JSONObject doDelete(String restPath) throws IOException {
