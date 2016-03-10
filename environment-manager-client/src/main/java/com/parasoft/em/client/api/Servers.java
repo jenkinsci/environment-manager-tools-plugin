@@ -15,4 +15,5 @@ import net.sf.json.JSONObject;
  */
 public interface Servers {
     JSONObject getServers() throws IOException;
+    JSONObject deleteServer(long serverId) throws IOException;
 }

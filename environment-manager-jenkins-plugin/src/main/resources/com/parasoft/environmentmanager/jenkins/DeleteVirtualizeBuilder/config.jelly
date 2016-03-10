@@ -1,0 +1,31 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!--
+    This jelly script is used for per-project configuration.
+
+    See global.jelly for a general discussion about jelly script.
+  -->
+
+  <!--
+    Creates a text field that shows the value of the "name" property.
+    When submitted, it will be passed to the corresponding constructor parameter.
+  -->
+  <f:block>
+    <table>
+      <f:nested>
+        <f:radio name="serverType" title="Delete Virtualize server matching host" value="host" checked="${instance.isServerType('host')}" inline="true">
+        </f:radio>
+        <f:entry title="Virtualize host" field="serverHost">
+          <f:textbox  />
+        </f:entry>
+      </f:nested>
+      <f:nested>
+        <f:radio name="serverType" title="Delete Virtualize server matching name" value="name" checked="${instance.isServerType('name')}" inline="true">
+        </f:radio>
+        <f:entry title="Virtualize name" field="serverName">
+          <f:textbox  />
+        </f:entry>
+      </f:nested>
+    </table>
+  </f:block>
+</j:jelly>

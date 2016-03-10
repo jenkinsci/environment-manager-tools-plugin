@@ -23,4 +23,8 @@ public class ServersImpl extends JSONClient implements Servers {
         return doGet("api/v2/servers", true);
     }
 
+    public JSONObject deleteServer(long serverId) throws IOException {
+        return doDelete("api/v2/servers/" + serverId);
+    }
+
 }
