@@ -1,17 +1,8 @@
 /*
- * $RCSfile$
- * $Revision$
- *
- * Comments:
- *
  * (C) Copyright ParaSoft Corporation 2013.  All rights reserved.
  * THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF ParaSoft
  * The copyright notice above does not evidence any
  * actual or intended publication of such source code.
- *
- * $Author$          $Locker$
- * $Date$
- * $Log$
  */
 package com.parasoft.em.client.impl;
 
@@ -27,17 +18,19 @@ public class EnvironmentsImpl extends JSONClient implements Environments {
         super(emUrl, username, password);
     }
     public JSONObject getEnvironments() throws IOException {
-        return doGet("api/v1/environments", true);
+        return doGet("api/v2/environments", true);
     }
-    public JSONObject getEnvironment(int environmentId) throws IOException {
-        return doGet("api/v1/environments/" + environmentId);
+    public JSONObject getEnvironment(long environmentId) throws IOException {
+        return doGet("api/v2/environments/" + environmentId);
     }
-    public JSONObject getEnvironmentInstances(int environmentId) throws IOException {
-        return doGet("api/v1/environments/" + environmentId + "/instances", true);
+    public JSONObject getEnvironmentInstances(long environmentId) throws IOException {
+        return doGet("api/v2/environments/" + environmentId + "/instances", true);
     }
-    public JSONObject getEnvironmentInstance(int environmentId, int instanceId)
+    public JSONObject getEnvironmentInstance(long environmentId, long instanceId)
             throws IOException {
-        return doGet("api/v1/environments/" + environmentId + "/instances/" + instanceId);
+        return doGet("api/v2/environments/" + environmentId + "/instances/" + instanceId);
     }
-
+    public JSONObject deleteEnvironment(long environmentId, boolean recursive) throws IOException {
+        return doDelete("api/v2/environments/" + environmentId + "?recursive=" + recursive);
+    }
 }

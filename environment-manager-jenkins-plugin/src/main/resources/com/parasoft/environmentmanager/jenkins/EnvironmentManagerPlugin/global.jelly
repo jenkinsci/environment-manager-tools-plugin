@@ -12,7 +12,7 @@
     tags they use. Views are always organized according to its owner class,
     so it should be straightforward to find them.
   -->
-  <f:section title="Environment Manager Builder">
+  <f:section title="Parasoft Environment Manager">
     <f:entry title="URL" field="emUrl"
       description="Specify the Environment Manager URL">
       <f:textbox />

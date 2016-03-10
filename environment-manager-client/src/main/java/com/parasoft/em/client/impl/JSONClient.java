@@ -198,6 +198,12 @@ public class JSONClient {
     protected JSONObject doDelete(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("DELETE");
-        return getResponseJSON(connection.getInputStream());
+        int responseCode = connection.getResponseCode();
+        if (responseCode / 100 == 2) {
+            return getResponseJSON(connection.getInputStream());
+        } else {
+            String errorMessage = getResponseString(connection.getErrorStream());
+            throw new IOException(restPath + ' ' + responseCode + '\n' + errorMessage);
+        }
     }
 }

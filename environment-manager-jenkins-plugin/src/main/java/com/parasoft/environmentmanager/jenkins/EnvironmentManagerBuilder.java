@@ -27,6 +27,7 @@ import com.parasoft.em.client.impl.EnvironmentsImpl;
 import com.parasoft.em.client.impl.ProvisionsImpl;
 import com.parasoft.em.client.impl.ServersImpl;
 import com.parasoft.em.client.impl.SystemsImpl;
+import com.parasoft.environmentmanager.jenkins.EnvironmentManagerPlugin.EnvironmentManagerPluginDescriptor;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -36,7 +37,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.FormValidation;
 import hudson.util.Secret;
 import hudson.util.ListBoxModel;
 
@@ -170,10 +170,15 @@ public class EnvironmentManagerBuilder extends Builder {
     public boolean perform(final AbstractBuild<?, ?> build, Launcher launcher,
             final BuildListener listener) throws InterruptedException, IOException
     {
+        EnvironmentManagerPluginDescriptor pluginDescriptor =
+            EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+        String emUrl = pluginDescriptor.getEmUrl();
+        String username = pluginDescriptor.getUsername();
+        Secret password = pluginDescriptor.getPassword();
         EnvVars envVars = build.getEnvironment(listener);
         int targetEnvironmentId = environmentId;
         int targetInstanceId = instanceId;
-        Environments environments = new EnvironmentsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+        Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
         JSONObject instance = environments.getEnvironmentInstance(environmentId, instanceId);
         if (copyToServer) {
             JSONObject targetServer = null;
@@ -187,7 +192,7 @@ public class EnvironmentManagerBuilder extends Builder {
                 if (isServerType("registered")) {
                     targetServerId = serverId;
                 }
-                Servers servers = new ServersImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+                Servers servers = new ServersImpl(emUrl, username, password.getPlainText());
                 JSONObject response = servers.getServers();
                 if (response.has("servers")) {
                     JSONArray envArray = response.getJSONArray("servers");
@@ -242,7 +247,7 @@ public class EnvironmentManagerBuilder extends Builder {
                 }
                 Thread.sleep(10000); // try again in 10 seconds
             }
-            EnvironmentCopy environmentCopy = new EnvironmentCopyImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+            EnvironmentCopy environmentCopy = new EnvironmentCopyImpl(emUrl, username, password.getPlainText());
             JSONObject dataRepoSettings = null;
             if (isRepoType("target")) {
                 dataRepoSettings = new JSONObject();
@@ -279,15 +284,15 @@ public class EnvironmentManagerBuilder extends Builder {
                 }
             }
         }
-        listener.getLogger().println("Executing provisioning action on " + getDescriptor().getEmUrl());
-        Provisions provisions = new ProvisionsImpl(getDescriptor().getEmUrl(), getDescriptor().getUsername(), getDescriptor().getPassword().getPlainText());
+        listener.getLogger().println("Executing provisioning action on " + emUrl);
+        Provisions provisions = new ProvisionsImpl(emUrl, username, password.getPlainText());
         JSONObject event = provisions.createProvisionEvent(targetEnvironmentId, targetInstanceId, abortOnFailure);
         boolean result = provisions.monitorEvent(event, new EventMonitor() {
             public void logMessage(String message) {
                 listener.getLogger().println(message);
             }
         });
-        String baseUrl = getDescriptor().getEmUrl();
+        String baseUrl = emUrl;
         if (!baseUrl.endsWith("/")) {
             baseUrl += "/";
         }
@@ -314,48 +319,9 @@ public class EnvironmentManagerBuilder extends Builder {
     
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
-        private String emUrl;
-        private String username;
-        private Secret password;
-        
+
         public DescriptorImpl() {
             load();
-        }
-        
-        public String getEmUrl() {
-            return emUrl;
-        }
-        
-        public String getUsername() {
-            return username;
-        }
-        
-        public Secret getPassword() {
-            return password;
-        }
-        
-        public FormValidation doTestConnection(@QueryParameter String emUrl, @QueryParameter String username, @QueryParameter String password) {
-            Secret secret = Secret.fromString(password);
-            try {
-                Environments environments = new EnvironmentsImpl(emUrl, username, secret.getPlainText());
-                environments.getEnvironments();
-            } catch (IOException e) {
-                // First try to re-run while appending /em
-                if (emUrl.endsWith("/")) {
-                    emUrl += "em";
-                } else {
-                    emUrl += "/em";
-                }
-                try {
-                    Environments environments = new EnvironmentsImpl(emUrl, username, secret.getPlainText());
-                    environments.getEnvironments();
-                    return FormValidation.ok("Successfully connected to Environment Manager");
-                } catch (IOException e2) {
-                    // return the original exception
-                }
-                return FormValidation.error(e, "Unable to connect to Environment Manager Server");
-            }
-            return FormValidation.ok("Successfully connected to Environment Manager");
         }
 
         @Override
@@ -365,36 +331,12 @@ public class EnvironmentManagerBuilder extends Builder {
 
         @Override
         public String getDisplayName() {
-            return "Parasoft Environment Manager";
+            return "Deploy an Environment";
         }
-        
+
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            emUrl = json.getString("emUrl");
-            username = json.getString("username");
-            password = Secret.fromString(json.getString("password"));
-            
-            // Test the emUrl, appending "/em" if necessary
-            try {
-                Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
-                environments.getEnvironments();
-            } catch (IOException e) {
-                // First try to re-run while appending the default context path /em
-                String testUrl = emUrl;
-                if (testUrl.endsWith("/")) {
-                    testUrl += "em";
-                } else {
-                    testUrl += "/em";
-                }
-                try {
-                    Environments environments = new EnvironmentsImpl(testUrl, username, password.getPlainText());
-                    environments.getEnvironments();
-                    emUrl = testUrl;
-                } catch (IOException e2) {
-                    throw new FormException("Unable to connect to Environment Manager at " + emUrl, "emUrl");
-                }
-            }
-            
+            req.bindJSON(this, json);
             save();
             return super.configure(req, json);
         }
@@ -402,6 +344,11 @@ public class EnvironmentManagerBuilder extends Builder {
         public ListBoxModel doFillSystemIdItems() {
             ListBoxModel m = new ListBoxModel();
             try {
+                EnvironmentManagerPluginDescriptor pluginDescriptor =
+                    EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+                String emUrl = pluginDescriptor.getEmUrl();
+                String username = pluginDescriptor.getUsername();
+                Secret password = pluginDescriptor.getPassword();
                 if (emUrl != null) {
                     Systems systems = new SystemsImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = systems.getSystems();
@@ -426,6 +373,11 @@ public class EnvironmentManagerBuilder extends Builder {
         public ListBoxModel doFillEnvironmentIdItems(@QueryParameter int systemId) {
             ListBoxModel m = new ListBoxModel();
             try {
+                EnvironmentManagerPluginDescriptor pluginDescriptor =
+                    EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+                String emUrl = pluginDescriptor.getEmUrl();
+                String username = pluginDescriptor.getUsername();
+                Secret password = pluginDescriptor.getPassword();
                 if (emUrl != null) {
                     Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = environments.getEnvironments();
@@ -452,6 +404,11 @@ public class EnvironmentManagerBuilder extends Builder {
         public ListBoxModel doFillInstanceIdItems(@QueryParameter int environmentId) {
             ListBoxModel m = new ListBoxModel();
             try {
+                EnvironmentManagerPluginDescriptor pluginDescriptor =
+                    EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+                String emUrl = pluginDescriptor.getEmUrl();
+                String username = pluginDescriptor.getUsername();
+                Secret password = pluginDescriptor.getPassword();
                 Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
                 JSONObject instances = environments.getEnvironmentInstances(environmentId);
                 if (instances.has("instances")) {
@@ -469,6 +426,11 @@ public class EnvironmentManagerBuilder extends Builder {
         public ListBoxModel doFillServerIdItems() {
             ListBoxModel m = new ListBoxModel();
             try {
+                EnvironmentManagerPluginDescriptor pluginDescriptor =
+                    EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+                String emUrl = pluginDescriptor.getEmUrl();
+                String username = pluginDescriptor.getUsername();
+                Secret password = pluginDescriptor.getPassword();
                 if (emUrl != null) {
                     Servers servers = new ServersImpl(emUrl, username, password.getPlainText());
                     JSONObject response = servers.getServers();
