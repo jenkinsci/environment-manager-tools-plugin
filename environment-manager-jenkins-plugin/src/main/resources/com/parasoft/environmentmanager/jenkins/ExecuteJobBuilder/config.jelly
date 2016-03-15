@@ -12,7 +12,7 @@
   -->
   <f:block>
     <table>
-      <f:entry title="Test Scenario Jobs" field="jobId">
+      <f:entry title="Test scenario job" field="jobId">
         <f:select />
       </f:entry>
     </table>

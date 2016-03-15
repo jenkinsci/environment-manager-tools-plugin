@@ -331,7 +331,7 @@ public class EnvironmentManagerBuilder extends Builder {
 
         @Override
         public String getDisplayName() {
-            return "Deploy an Environment";
+            return "Deploy an environment";
         }
 
         @Override

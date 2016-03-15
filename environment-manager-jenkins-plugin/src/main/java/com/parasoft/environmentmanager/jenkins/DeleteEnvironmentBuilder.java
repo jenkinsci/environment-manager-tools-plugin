@@ -113,7 +113,7 @@ public class DeleteEnvironmentBuilder extends Builder {
 
         @Override
         public String getDisplayName() {
-            return "Destroy an Environment";
+            return "Destroy an environment";
         }
 
         @Override

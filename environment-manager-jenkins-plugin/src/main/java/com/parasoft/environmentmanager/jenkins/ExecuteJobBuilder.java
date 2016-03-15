@@ -97,7 +97,7 @@ public class ExecuteJobBuilder extends Builder {
 
 		@Override
 		public String getDisplayName() {
-			return "Execute a Test Scenario Job";
+			return "Execute a test scenario job";
 		}
 
 		@Override
