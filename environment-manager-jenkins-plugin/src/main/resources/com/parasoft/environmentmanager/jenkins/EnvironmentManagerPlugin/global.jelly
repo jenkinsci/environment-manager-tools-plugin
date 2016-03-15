@@ -17,10 +17,10 @@
       description="Specify the Environment Manager URL">
       <f:textbox />
     </f:entry>
-    <f:entry title="username" field="username">
+    <f:entry title="Username" field="username">
       <f:textbox />
     </f:entry>
-    <f:entry title="password" field="password">
+    <f:entry title="Password" field="password">
       <f:password />
     </f:entry>
     <f:validateButton
