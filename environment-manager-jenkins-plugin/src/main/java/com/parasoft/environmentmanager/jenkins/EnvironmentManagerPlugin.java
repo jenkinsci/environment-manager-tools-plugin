@@ -1,3 +1,10 @@
+/*
+ * (C) Copyright ParaSoft Corporation 2016.  All rights reserved.
+ * THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF ParaSoft
+ * The copyright notice above does not evidence any
+ * actual or intended publication of such source code.
+ */
+
 package com.parasoft.environmentmanager.jenkins;
 
 import java.io.IOException;
@@ -97,9 +104,12 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 		}
 
 		public FormValidation doTestConnection(@QueryParameter String emUrl, @QueryParameter String username, @QueryParameter String password) {
+			boolean emApiV1 = false;
 			Secret secret = Secret.fromString(password);
 			try {
 				Environments environments = new EnvironmentsImpl(emUrl, username, secret.getPlainText());
+				environments.getEnvironmentsV1();
+				emApiV1 = true;
 				environments.getEnvironments();
 			} catch (IOException e) {
 				// First try to re-run while appending /em
@@ -110,10 +120,15 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 				}
 				try {
 					Environments environments = new EnvironmentsImpl(emUrl, username, secret.getPlainText());
+					environments.getEnvironmentsV1();
+					emApiV1 = true;
 					environments.getEnvironments();
 					return FormValidation.ok("Successfully connected to Environment Manager");
 				} catch (IOException e2) {
 					// return the original exception
+				}
+				if (emApiV1) {
+					return FormValidation.error("Environment Manager version 2.7.4 or higher is required.");
 				}
 				return FormValidation.error(e, "Unable to connect to Environment Manager Server");
 			}

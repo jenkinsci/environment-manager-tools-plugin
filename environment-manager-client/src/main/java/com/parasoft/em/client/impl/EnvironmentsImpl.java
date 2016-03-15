@@ -17,6 +17,9 @@ public class EnvironmentsImpl extends JSONClient implements Environments {
     public EnvironmentsImpl(String emUrl, String username, String password) {
         super(emUrl, username, password);
     }
+    public JSONObject getEnvironmentsV1() throws IOException {
+        return doGet("api/v1/environments", true);
+    }
     public JSONObject getEnvironments() throws IOException {
         return doGet("api/v2/environments", true);
     }

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright ParaSoft Corporation 2013.  All rights reserved.
+ * (C) Copyright ParaSoft Corporation 2016.  All rights reserved.
  * THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF ParaSoft
  * The copyright notice above does not evidence any
  * actual or intended publication of such source code.
@@ -17,12 +17,9 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Jobs;
-import com.parasoft.em.client.api.Provisions;
 import com.parasoft.em.client.impl.JobsImpl;
-import com.parasoft.em.client.impl.ProvisionsImpl;
 import com.parasoft.environmentmanager.jenkins.EnvironmentManagerPlugin.EnvironmentManagerPluginDescriptor;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;

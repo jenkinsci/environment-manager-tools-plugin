@@ -20,6 +20,7 @@ import java.io.IOException;
 import net.sf.json.JSONObject;
 
 public interface Environments {
+    JSONObject getEnvironmentsV1() throws IOException;
     JSONObject getEnvironments() throws IOException;
     JSONObject getEnvironment(long environmentId) throws IOException;
     JSONObject getEnvironmentInstances(long environmentId) throws IOException;
