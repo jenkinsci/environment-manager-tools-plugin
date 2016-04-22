@@ -3,13 +3,13 @@
   <groupId>com.parasoft</groupId>
   <artifactId>environment-manager-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <version>2.1-SNAPSHOT</version>
+  <version>2.0-SNAPSHOT</version>
   <name>environment-manager-maven-plugin</name>
   <url>http://maven.apache.org</url>
   <parent>
       <groupId>com.parasoft</groupId>
       <artifactId>environment-manager-tools</artifactId>
-      <version>2.1-SNAPSHOT</version>
+      <version>2.0-SNAPSHOT</version>
   </parent>
   <dependencies>
     <dependency>
@@ -18,9 +18,9 @@
       <version>2.0</version>
     </dependency>
     <dependency>
-    	<groupId>com.parasoft</groupId>
-    	<artifactId>environment-manager-client</artifactId>
-    	<version>2.1-SNAPSHOT</version>
+      <groupId>com.parasoft</groupId>
+      <artifactId>environment-manager-client</artifactId>
+      <version>2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
