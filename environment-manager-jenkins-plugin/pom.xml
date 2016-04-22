@@ -13,6 +13,27 @@
 	<version>2.0-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 
+	<developers>
+		<developer>
+			<id>mattloveparasoft</id>
+			<name>Matt Love</name>
+			<email>matt.love@parasoft.com</email>
+		</developer>
+		<developer>
+			<id>danieldominguezparasoft</id>
+			<name>Daniel Dominguez</name>
+			<email>daniel.dominguez@parasoft.com</email>
+		</developer>
+	</developers>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>
+
 	<!-- get every artifact through repo.jenkins-ci.org, which proxies all the 
 		artifacts that we need -->
 	<repositories>
