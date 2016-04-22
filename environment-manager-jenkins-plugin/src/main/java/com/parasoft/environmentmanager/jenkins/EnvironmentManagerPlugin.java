@@ -38,11 +38,19 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 
 	@Override
 	public EnvironmentManagerPluginDescriptor getDescriptor() {
-		return (EnvironmentManagerPluginDescriptor) Jenkins.getInstance().getDescriptor(getClass());
+		Jenkins instance = Jenkins.getInstance();
+		if (instance == null) {
+			return null;
+		}
+		return (EnvironmentManagerPluginDescriptor) instance.getDescriptor(getClass());
 	}
 
 	public static EnvironmentManagerPluginDescriptor getEnvironmentManagerPluginDescriptor() {
-		return (EnvironmentManagerPluginDescriptor) Jenkins.getInstance().getDescriptor(EnvironmentManagerPlugin.class);
+		Jenkins instance = Jenkins.getInstance();
+		if (instance == null) {
+			return null;
+		}
+		return (EnvironmentManagerPluginDescriptor) instance.getDescriptor(EnvironmentManagerPlugin.class);
 	}
 
 	@Extension
