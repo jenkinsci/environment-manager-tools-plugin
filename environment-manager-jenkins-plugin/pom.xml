@@ -9,10 +9,13 @@
 
 	<groupId>com.parasoft</groupId>
 	<artifactId>environment-manager</artifactId>
-    <name>Parasoft Environment Manager</name>
+	<name>Parasoft Environment Manager</name>
 	<version>2.0-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 	<url>https://wiki.jenkins-ci.org/display/JENKINS/Environment+Manager+Plugin</url>
+	<properties>
+		<jenkins.version>1.625.3</jenkins.version>
+	</properties>
 	<developers>
 		<developer>
 			<id>mattloveparasoft</id>
