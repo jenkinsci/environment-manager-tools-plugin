@@ -27,9 +27,9 @@
 	</licenses>
 
   <scm>
-    <connection>scm:git:http://stash.parasoft.com:7990/EMT/environment-manager-tools.git</connection>
-    <developerConnection>scm:git:ssh://stash.parasoft.com:7999/EMT/environment-manager-tools.git</developerConnection>
-    <tag>HEAD</tag>
+    <connection>scm:git:ssh://github.com/jenkinsci/environment-manager-tools-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/environment-manager-tools-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/environment-manager-tools-plugin</url>
   </scm>
 
   <modules>
