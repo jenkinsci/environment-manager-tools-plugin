@@ -40,22 +40,6 @@
 		</license>
 	</licenses>
 
-	<!-- get every artifact through repo.jenkins-ci.org, which proxies all the 
-		artifacts that we need -->
-	<repositories>
-		<repository>
-			<id>repo.jenkins-ci.org</id>
-			<url>http://repo.jenkins-ci.org/public/</url>
-		</repository>
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>http://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.parasoft</groupId>
@@ -69,28 +53,4 @@
 		</dependency>
 	</dependencies>
 
-    <build>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-            </extension>
-        </extensions>
-    </build>
-    
-  <distributionManagement>
-    <downloadUrl>http://build.parasoft.com/maven</downloadUrl>
-    <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>ParasoftMavenPublic</id>
-      <name>Parasoft Public Repository</name>
-      <url>scp://build.parasoft.com/var/www/html/maven</url>
-    </repository>
-    <snapshotRepository>
-      <uniqueVersion>true</uniqueVersion>
-      <id>ParasoftNexusRepo</id>
-      <name>Parasoft Nexus Repository</name>
-      <url>http://nexus.parasoft.com:8081/nexus/content/repositories/snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
 </project>
