@@ -1,3 +1,0 @@
-<antlib>
-    <taskdef name="provision" classname="com.parasoft.environmentmanager.ant.ProvisionTask"/>
-</antlib>

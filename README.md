@@ -1,8 +1,7 @@
-Readme for the environment manager tools projects.
-=================================================
+Readme for the environment manager tools project
+================================================
 
-This project contains a client for the Environment Manager REST API.  As well
-as integration components for Jenkins, Ant, and Maven.
+This project contains a client for the Environment Manager REST API via Jenkins.
 
 Prerequisites for building:
 --------------------------
@@ -14,10 +13,14 @@ To build:
 
 mvn clean install
 
+To run:
+-------
+
+mvn hpi:run
+
 
 To perform a release:
 --------------------
 
-mvn release:prepare
-mvn release:perform
+mvn release:prepare release:perform
 
