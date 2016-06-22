@@ -362,8 +362,8 @@ public class EnvironmentManagerBuilder extends Builder {
                     Systems systems = new SystemsImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = systems.getSystems();
                     if (envs.has("systems")) {
-                        JSONArray envArray = envs.getJSONArray("systems");
-                        for (Object o : envArray) {
+                        JSONArray sysArray = envs.getJSONArray("systems");
+                        for (Object o : sysArray) {
                             JSONObject system = (JSONObject) o;
                             String name = system.getString("name");
                             if (system.has("version")) {
@@ -388,6 +388,17 @@ public class EnvironmentManagerBuilder extends Builder {
                 String username = pluginDescriptor.getUsername();
                 Secret password = pluginDescriptor.getPassword();
                 if (emUrl != null) {
+                    if (systemId == 0) {
+                        Systems systems = new SystemsImpl(emUrl, username, password.getPlainText());
+                        JSONObject envs = systems.getSystems();
+                        if (envs.has("systems")) {
+                            JSONArray sysArray = envs.getJSONArray("systems");
+                            if (sysArray.size() > 0) {
+                                JSONObject system = sysArray.getJSONObject(0);
+                                systemId = system.getInt("id");
+                            }
+                        }
+                    }
                     Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
                     JSONObject envs = environments.getEnvironments();
                     if (envs.has("environments")) {
@@ -410,7 +421,7 @@ public class EnvironmentManagerBuilder extends Builder {
             return m;
         }
         
-        public ListBoxModel doFillInstanceIdItems(@QueryParameter int environmentId) {
+        public ListBoxModel doFillInstanceIdItems(@QueryParameter int systemId, @QueryParameter int environmentId) {
             ListBoxModel m = new ListBoxModel();
             try {
                 EnvironmentManagerPluginDescriptor pluginDescriptor =
@@ -418,7 +429,36 @@ public class EnvironmentManagerBuilder extends Builder {
                 String emUrl = pluginDescriptor.getEmUrl();
                 String username = pluginDescriptor.getUsername();
                 Secret password = pluginDescriptor.getPassword();
+                if (systemId == 0) {
+                    Systems systems = new SystemsImpl(emUrl, username, password.getPlainText());
+                    JSONObject envs = systems.getSystems();
+                    if (envs.has("systems")) {
+                        JSONArray sysArray = envs.getJSONArray("systems");
+                        if (sysArray.size() > 0) {
+                            JSONObject system = sysArray.getJSONObject(0);
+                            systemId = system.getInt("id");
+                        }
+                    }
+                }
                 Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
+                if (environmentId == 0) {
+                    JSONObject envs = environments.getEnvironments();
+                    if (envs.has("environments")) {
+                        JSONArray envArray = envs.getJSONArray("environments");
+                        for (Object o : envArray) {
+                            JSONObject env = (JSONObject) o;
+                            if (env.getInt("systemId") == systemId) {
+                                environmentId = env.getInt("id");
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    JSONObject env = environments.getEnvironment(environmentId);
+                    if (env.getInt("systemId") != systemId) {
+                        return m;
+                    }
+                }
                 JSONObject instances = environments.getEnvironmentInstances(environmentId);
                 if (instances.has("instances")) {
                     JSONArray instArray = instances.getJSONArray("instances");
