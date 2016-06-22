@@ -179,10 +179,11 @@ public class JSONClient {
         connection.setRequestMethod("POST");
         if (payload != null) {
             String payloadString = payload.toString();
-            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
             BufferedOutputStream stream = new BufferedOutputStream(connection.getOutputStream());
             try {
-                stream.write(payloadString.getBytes("UTF-8"), 0, payloadString.length());
+                byte[] bytes = payloadString.getBytes("UTF-8");
+                stream.write(bytes, 0, bytes.length);
             } finally {
                 stream.close();
             }
