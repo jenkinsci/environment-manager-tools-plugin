@@ -16,7 +16,7 @@ mvn clean install
 To run:
 -------
 
-mvn hpi:run
+mvn hpi:run -Djetty.port=8082
 
 
 To perform a release:
