@@ -117,7 +117,8 @@ public class JSONClient {
             JSONObject result = doGet(addOffset(restPath, offset));
             JSONObject iterativeResult = result;
             while (countTopLevelItems(iterativeResult) == DEFAULT_LIMIT) {
-                iterativeResult = doGet(addOffset(restPath, offset + DEFAULT_LIMIT + 1));
+                offset += DEFAULT_LIMIT;
+                iterativeResult = doGet(addOffset(restPath, offset));
                 appendResults(iterativeResult, result);
             }
             return result;
@@ -133,11 +134,11 @@ public class JSONClient {
     /**
      * Assumes objects are of the form
      * {
-     *     rootItem: {
+     *     rootItem: [
      *         {item ...},
      *         {item2 ...},
      *         etc   
-     *     }
+     *     ]
      * }
      * 
      * and will count the items.
