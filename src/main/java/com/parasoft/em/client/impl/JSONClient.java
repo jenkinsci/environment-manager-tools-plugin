@@ -128,7 +128,10 @@ public class JSONClient {
             }
             return result;
         } else {
-            return doGet(restPath + "?" + parameter);
+            if (!parameter.isEmpty()) {
+                return doGet(restPath + "?" + parameter); 
+            }
+            return doGet(restPath);
         }
     }
     
