@@ -95,6 +95,10 @@ public class JSONClient {
             in.close();
         }
     }
+
+    protected JSONObject doGet(String restPath, boolean returnsArray) throws IOException {
+        return doGet(restPath, "", returnsArray);
+    }  
     
     protected JSONObject doGet(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
@@ -106,29 +110,37 @@ public class JSONClient {
      * will cause the call to potentially be made multiple times if there are more
      * then 50 (current default) items that need to be returned by the EM API. 
      * 
-     * @param restPath
+     * @param restPath api path
+     * @param parameter single string in the format of {@literal key=value&key=value } to be appended after offset and limit parameters
      * @param returnsArray
      * @return
      * @throws IOException
      */
-    protected JSONObject doGet(String restPath, boolean returnsArray) throws IOException {
+    protected JSONObject doGet(String restPath, String parameter, boolean returnsArray) throws IOException {
         if (returnsArray) {
             int offset = 0;
-            JSONObject result = doGet(addOffset(restPath, offset));
+            JSONObject result = doGet(addOffset(restPath, offset, parameter));
             JSONObject iterativeResult = result;
             while (countTopLevelItems(iterativeResult) == DEFAULT_LIMIT) {
                 offset += DEFAULT_LIMIT;
-                iterativeResult = doGet(addOffset(restPath, offset));
+                iterativeResult = doGet(addOffset(restPath, offset, parameter));
                 appendResults(iterativeResult, result);
             }
             return result;
         } else {
+            if (!parameter.isEmpty()) {
+                return doGet(restPath + "?" + parameter); 
+            }
             return doGet(restPath);
         }
     }
     
-    private String addOffset(String path, int offset) {
-        return path + "?limit=" + DEFAULT_LIMIT + "&offset=" + offset;
+    private String addOffset(String path, int offset, String parameter) {
+        String result = path + "?limit=" + DEFAULT_LIMIT + "&offset=" + offset;
+        if (!parameter.isEmpty() ) {
+            result += "&" + parameter;
+        }
+        return result;
     }
     
     /**

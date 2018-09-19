@@ -33,7 +33,7 @@ public class JobsImpl extends JSONClient implements Jobs {
 	}
 
 	public JSONObject getJobs() throws IOException {
-		return doGet("api/v2/jobs", true);
+		return doGet("api/v2/jobs", "fields=id%2Cname", true);
 	}
 
 	public JSONObject getJob(long jobId) throws IOException {
