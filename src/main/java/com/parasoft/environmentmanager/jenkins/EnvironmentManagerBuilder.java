@@ -244,7 +244,7 @@ public class EnvironmentManagerBuilder extends Builder {
                         errorMessage += "host:  " + targetServerHost;
                     }
                     listener.getLogger().println(errorMessage);
-                    listener.getLogger().println("Waiting for a matching Virtualize server to register with EM...");
+                    listener.getLogger().println("Waiting for a matching Virtualize server to register with the Continuous Testing Platform...");
                     waitingNotFoundMessageShown = true;
                 }
                 if ("OFFLINE".equals(status) || "REFRESHING".equals(status)) {

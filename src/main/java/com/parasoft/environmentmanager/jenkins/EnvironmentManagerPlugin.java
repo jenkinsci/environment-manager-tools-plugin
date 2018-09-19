@@ -87,7 +87,7 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 					environments.getEnvironments();
 					emUrl = testUrl;
 				} catch (IOException e2) {
-					throw new FormException("Unable to connect to Environment Manager at " + emUrl, "emUrl");
+					throw new FormException("Unable to connect to the Continuous Testing Platform at " + emUrl, "emUrl");
 				}
 			}
 			req.bindJSON(this, formData);
@@ -105,7 +105,7 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 
 		@Override
 		public String getDisplayName() {
-			return "Parasoft Environment Manager";
+			return "Parasoft Continuous Testing Platform";
 		}
 
 		public String getEmUrl() {
@@ -140,16 +140,16 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 					environments.getEnvironmentsV1();
 					emApiV1 = true;
 					environments.getEnvironments();
-					return FormValidation.ok("Successfully connected to Environment Manager");
+					return FormValidation.ok("Successfully connected to Continuous Testing Platform");
 				} catch (IOException e2) {
 					// return the original exception
 				}
 				if (emApiV1) {
-					return FormValidation.error("Environment Manager version 2.7.4 or higher is required.");
+					return FormValidation.error("Continuous Testing Platform version 3.0 or higher is required.");
 				}
-				return FormValidation.error(e, "Unable to connect to Environment Manager Server");
+				return FormValidation.error(e, "Unable to connect to Continuous Testing Platform");
 			}
-			return FormValidation.ok("Successfully connected to Environment Manager");
+			return FormValidation.ok("Successfully connected to Continuous Testing Platform");
 		}
 	}
 

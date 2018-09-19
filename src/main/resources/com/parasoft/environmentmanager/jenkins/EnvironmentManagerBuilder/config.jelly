@@ -30,7 +30,7 @@
           <f:textbox  />
         </f:entry>
         <f:nested>
-          <f:radio name="serverType" title="To a Virtualize server registered with EM" value="registered" checked="${instance.isServerType('registered')}" inline="true">
+          <f:radio name="serverType" title="To a Virtualize server registered with the Continuous Testing Platform" value="registered" checked="${instance.isServerType('registered')}" inline="true">
           </f:radio>
           <f:entry title="Virtualize server" field="serverId">
             <f:select />

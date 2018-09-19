@@ -14,7 +14,7 @@
   -->
   <f:section title="Parasoft Environment Manager">
     <f:entry title="URL" field="emUrl"
-      description="Specify the Environment Manager URL">
+      description="Specify the Continuous Testing Platform URL">
       <f:textbox />
     </f:entry>
     <f:entry title="Username" field="username">
@@ -24,7 +24,7 @@
       <f:password />
     </f:entry>
     <f:validateButton
-      title="Test Connection" progress="Connecting to Environment Manager" 
+      title="Test Connection" progress="Connecting to Continuous Testing Platform" 
         method="testConnection" with="emUrl,username,password"/> 
   </f:section>
 </j:jelly>
