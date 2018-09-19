@@ -67,9 +67,19 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 
 		@Override
 		public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+			String oldEmUrl = emUrl;
+			String oldUsername = username;
+			Secret oldPassword = password;
 			emUrl = formData.getString("emUrl");
 			username = formData.getString("username");
 			password = Secret.fromString(formData.getString("password"));
+			if (emUrl.equals(oldEmUrl) &&
+				username.equals(oldUsername) &&
+				password.equals(oldPassword))
+			{
+				// nothing changed so don't test connection and don't save anything
+				return true;
+			}
 			// Test the emUrl, appending "/em" if necessary
 			try {
 				Environments environments = new EnvironmentsImpl(emUrl, username, password.getPlainText());
