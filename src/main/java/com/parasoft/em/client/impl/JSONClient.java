@@ -111,7 +111,7 @@ public class JSONClient {
      * then 50 (current default) items that need to be returned by the EM API. 
      * 
      * @param restPath api path
-     * @param parameter single string in the format of key=value&key=value to be appended after offset and limit parameters
+     * @param parameter single string in the format of {@literal key=value&key=value } to be appended after offset and limit parameters
      * @param returnsArray
      * @return
      * @throws IOException
