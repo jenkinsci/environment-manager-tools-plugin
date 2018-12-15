@@ -36,7 +36,7 @@ public class ProvisioningEventAction extends AbstractTestResultAction<Provisioni
     }
 
     public String getIconFileName() {
-        return "/plugin/environment-manager-jenkins-plugin/icons/Parasoft-48.gif";
+        return "/plugin/environment-manager/icons/Parasoft-48.gif";
     }
 
     public String getDisplayName() {
