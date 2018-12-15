@@ -17,6 +17,11 @@
 package com.parasoft.em.client.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import org.apache.commons.codec.binary.Base64;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -133,5 +138,18 @@ public class JobsImpl extends JSONClient implements Jobs {
 		throws IOException
 	{
 		return doDelete("api/v2/jobs/" + jobId + "/histories/" + historyId);
+	}
+
+	public InputStream download(String urlPath) throws IOException {
+		URL url = new URL (baseUrl + urlPath);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoOutput(true);
+		if (username != null) {
+			String encoding = username + ":" + password;
+			encoding = Base64.encodeBase64String(encoding.getBytes("UTF-8"));
+			connection.setRequestProperty("Authorization", "Basic " + encoding);
+		}
+		connection.setRequestMethod("GET");
+		return connection.getInputStream();
 	}
 }

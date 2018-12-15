@@ -30,6 +30,7 @@ import com.parasoft.em.client.impl.JobsImpl;
 import com.parasoft.environmentmanager.jenkins.EnvironmentManagerPlugin.EnvironmentManagerPluginDescriptor;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -82,6 +83,18 @@ public class ExecuteJobBuilder extends Builder {
 			for (int i = 0; i < reportIds.size(); i++) {
 				String reportUrl = baseUrl + "testreport/" + reportIds.getLong(i) + "/report.html";
 				build.addAction(new ProvisioningEventAction(build, jobJSON.getString("name"), reportUrl, 1, result ? 0 : 1));
+				FilePath workspace = build.getWorkspace();
+				if (workspace == null) {
+					continue;
+				}
+				try {
+					FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
+					reportDir.mkdirs();
+					FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
+					reportXmlFile.copyFrom(jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml"));
+				} catch (IOException e) {
+					// ignore exception: downloading report.xml was not supported prior to CTP 3.1.3
+				}
 			}
 		}
 		return result;

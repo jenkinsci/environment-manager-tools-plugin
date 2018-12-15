@@ -17,6 +17,7 @@
 package com.parasoft.em.client.api;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import net.sf.json.JSONObject;
 
@@ -27,4 +28,5 @@ public interface Jobs {
 	boolean monitorExecution(JSONObject history, EventMonitor monitor) throws IOException;
 	JSONObject getHistory(long jobId, long historyId) throws IOException;
 	JSONObject deleteHistory(long jobId, long historyId) throws IOException;
+	InputStream download(String urlPath) throws IOException;
 }
