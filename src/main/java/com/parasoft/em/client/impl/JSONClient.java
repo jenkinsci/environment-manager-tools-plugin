@@ -103,7 +103,7 @@ public class JSONClient {
     protected JSONObject doGet(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("GET");
-        return getResponseJSON(connection.getInputStream());
+        return handleResponse(restPath, connection);
     }
     /**
      * Set returnsArray to true if the API method returns a limit of items.  This
@@ -201,23 +201,31 @@ public class JSONClient {
                 stream.close();
             }
         }
-        int responseCode = connection.getResponseCode();
-        if (responseCode / 100 == 2) {
-            return getResponseJSON(connection.getInputStream());
-        } else {
-            String errorMessage = getResponseString(connection.getErrorStream());
-            throw new IOException(restPath + ' ' + responseCode + '\n' + errorMessage);
-        }
+        return handleResponse(restPath, connection);
     }
     
     protected JSONObject doDelete(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("DELETE");
+        return handleResponse(restPath, connection);
+    }
+
+    private JSONObject handleResponse(String restPath, HttpURLConnection connection)
+        throws IOException
+    {
         int responseCode = connection.getResponseCode();
         if (responseCode / 100 == 2) {
             return getResponseJSON(connection.getInputStream());
         } else {
             String errorMessage = getResponseString(connection.getErrorStream());
+            try {
+                JSONObject errorJSON = (JSONObject) JSONSerializer.toJSON(errorMessage);
+                if (errorJSON.has("message")) {
+                    errorMessage = errorJSON.getString("message");
+                }
+            } catch (JSONException e) {
+                // ignore exception
+            }
             throw new IOException(restPath + ' ' + responseCode + '\n' + errorMessage);
         }
     }

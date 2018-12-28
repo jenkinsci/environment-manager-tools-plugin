@@ -22,6 +22,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.util.URIUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -39,6 +40,10 @@ public class JobsImpl extends JSONClient implements Jobs {
 
 	public JSONObject getJobs() throws IOException {
 		return doGet("api/v2/jobs", "fields=id%2Cname", true);
+	}
+
+	public JSONObject getJobsByName(String name) throws IOException {
+		return doGet("api/v2/jobs", "name=" + URIUtil.encodeWithinQuery(name, "UTF-8"), true);
 	}
 
 	public JSONObject getJob(long jobId) throws IOException {

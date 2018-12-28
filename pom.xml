@@ -10,6 +10,10 @@
   <groupId>com.parasoft</groupId>
   <artifactId>environment-manager</artifactId>
   <name>Parasoft Environment Manager</name>
+  <organization>
+    <name>Parasoft</name>
+    <url>http://www.parasoft.com</url>
+  </organization>
   <version>2.7-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/Environment+Manager+Plugin</url>
@@ -18,6 +22,7 @@
     <!-- explicitly specifying the latest version here because one we get from 
       the parent POM tends to lag behind a bit -->
     <maven-hpi-plugin.version>1.115</maven-hpi-plugin.version>
+    <jdk.version>1.6</jdk.version>
   </properties>
 
   <developers>
@@ -53,11 +58,25 @@
       <artifactId>json-lib</artifactId>
       <version>2.4</version>
       <classifier>jdk15</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-collections</groupId>
+          <artifactId>commons-collections</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -72,8 +91,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>${jdk.version}</source>
+          <target>${jdk.version}</target>
         </configuration>
       </plugin>
     </plugins>
@@ -83,7 +102,7 @@
     <connection>scm:git:ssh://github.com/jenkinsci/environment-manager-tools-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/environment-manager-tools-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/environment-manager-tools-plugin</url>
-    <tag>HEAD</tag>
+    <tag>master</tag>
   </scm>
 
   <repositories>

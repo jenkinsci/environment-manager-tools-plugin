@@ -23,6 +23,7 @@ import net.sf.json.JSONObject;
 
 public interface Jobs {
 	JSONObject getJobs() throws IOException;
+	JSONObject getJobsByName(String name) throws IOException;
 	JSONObject getJob(long jobId) throws IOException;
 	JSONObject executeJob(long jobId) throws IOException;
 	boolean monitorExecution(JSONObject history, EventMonitor monitor) throws IOException;

@@ -17,6 +17,8 @@
 package com.parasoft.environmentmanager.jenkins;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -29,6 +31,7 @@ import com.parasoft.em.client.api.Jobs;
 import com.parasoft.em.client.impl.JobsImpl;
 import com.parasoft.environmentmanager.jenkins.EnvironmentManagerPlugin.EnvironmentManagerPluginDescriptor;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -41,18 +44,44 @@ import hudson.util.Secret;
 import hudson.util.ListBoxModel;
 
 public class ExecuteJobBuilder extends Builder {
+
+	private static final String JOB_BY_ID = "jobById";
+	private static final String JOB_BY_NAME = "jobByName";
+
 	private long jobId;
+	private String jobName;
+	private String jobType;
 
 	@DataBoundConstructor
 	public ExecuteJobBuilder(
-		long jobId)
+		long jobId,
+		String jobName,
+		String jobType)
 	{
 		super();
 		this.jobId = jobId;
+		this.jobName = jobName;
+		this.jobType = jobType;
 	}
 
 	public long getJobId() {
 		return jobId;
+	}
+
+	public String getJobName() {
+		return jobName;
+	}
+
+	public boolean isJobType(String type) {
+		if (jobId == 0) {
+			// default
+			return JOB_BY_NAME.equals(type);
+		}
+		if (jobType == null) {
+			// legacy
+			return JOB_BY_ID.equals(type);
+		}
+		return jobType.equals(type);
 	}
 
 	@Override
@@ -64,36 +93,60 @@ public class ExecuteJobBuilder extends Builder {
 		String emUrl = pluginDescriptor.getEmUrl();
 		String username = pluginDescriptor.getUsername();
 		Secret password = pluginDescriptor.getPassword();
+		EnvVars envVars = build.getEnvironment(listener);
 		Jobs jobs = new JobsImpl(emUrl, username, password.getPlainText());
-		JSONObject jobJSON = jobs.getJob(jobId);
-		listener.getLogger().println("Executing \"" + jobJSON.getString("name") + "\" on " + emUrl);
-		JSONObject history = jobs.executeJob(jobId);
-		boolean result = jobs.monitorExecution(history, new EventMonitor() {
-			public void logMessage(String message) {
-				listener.getLogger().println(message);
-			}
-		});
-		String baseUrl = emUrl;
-		if (!baseUrl.endsWith("/")) {
-			baseUrl += "/";
-		}
-		history = jobs.getHistory(jobId, history.getLong("id"));
-		JSONArray reportIds = history.optJSONArray("reportIds");
-		if (reportIds != null) {
-			for (int i = 0; i < reportIds.size(); i++) {
-				String reportUrl = baseUrl + "testreport/" + reportIds.getLong(i) + "/report.html";
-				build.addAction(new ProvisioningEventAction(build, jobJSON.getString("name"), reportUrl, 1, result ? 0 : 1));
-				FilePath workspace = build.getWorkspace();
-				if (workspace == null) {
-					continue;
+		boolean result = true;
+		List<JSONObject> jobsToExecute = new ArrayList<JSONObject>();
+		if (JOB_BY_NAME.equals(jobType)) {
+			String expandedJobName = envVars.expand(jobName);
+			JSONObject jobsJSON = jobs.getJobsByName(expandedJobName);
+			if (jobsJSON.has("jobs")) {
+				JSONArray jobsArray = jobsJSON.getJSONArray("jobs");
+				for (Object o : jobsArray) {
+					JSONObject jobJSON = (JSONObject) o;
+					if (expandedJobName.equals(jobJSON.getString("name"))) {
+						jobsToExecute.add(jobJSON);
+					}
 				}
-				try {
-					FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
-					reportDir.mkdirs();
-					FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
-					reportXmlFile.copyFrom(jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml"));
-				} catch (IOException e) {
-					// ignore exception: downloading report.xml was not supported prior to CTP 3.1.3
+			}
+			if (jobsToExecute.isEmpty()) {
+				listener.getLogger().println("ERROR: No test scenario job found on " + emUrl + " matching name \"" + expandedJobName + "\"");
+				result = false;
+			}
+		} else {
+			JSONObject jobJSON = jobs.getJob(jobId);
+			jobsToExecute.add(jobJSON);
+		}
+		for (JSONObject jobJSON : jobsToExecute) {
+			listener.getLogger().println("Executing \"" + jobJSON.getString("name") + "\" on " + emUrl);
+			JSONObject history = jobs.executeJob(jobJSON.getLong("id"));
+			result &= jobs.monitorExecution(history, new EventMonitor() {
+				public void logMessage(String message) {
+					listener.getLogger().println(message);
+				}
+			});
+			String baseUrl = emUrl;
+			if (!baseUrl.endsWith("/")) {
+				baseUrl += "/";
+			}
+			history = jobs.getHistory(jobId, history.getLong("id"));
+			JSONArray reportIds = history.optJSONArray("reportIds");
+			if (reportIds != null) {
+				for (int i = 0; i < reportIds.size(); i++) {
+					String reportUrl = baseUrl + "testreport/" + reportIds.getLong(i) + "/report.html";
+					build.addAction(new ProvisioningEventAction(build, jobJSON.getString("name"), reportUrl, 1, result ? 0 : 1));
+					FilePath workspace = build.getWorkspace();
+					if (workspace == null) {
+						continue;
+					}
+					try {
+						FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
+						reportDir.mkdirs();
+						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
+						reportXmlFile.copyFrom(jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml"));
+					} catch (IOException e) {
+						// ignore exception: downloading report.xml was not supported prior to CTP 3.1.3
+					}
 				}
 			}
 		}
