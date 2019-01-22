@@ -41,6 +41,11 @@
       <name>Kailun Chen</name>
       <email>kailun.chen@parasoft.com</email>
     </developer>
+    <developer>
+      <id>yshi_parasoft</id>
+      <name>Yuqian Shi</name>
+      <email>yuqian.shi@parasoft.com</email>
+    </developer>
   </developers>
 
   <licenses>
