@@ -25,6 +25,21 @@
     </f:entry>
     <f:validateButton
       title="Test Connection" progress="Connecting to Continuous Testing Platform" 
-        method="testConnection" with="emUrl,username,password"/> 
+        method="testConnection" with="emUrl,username,password"/>
+  </f:section>
+  <f:section title="Parasoft DTP">
+    <f:entry title="URL" field="dtpUrl"
+      description="Specify the DTP URL">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="Username" field="dtpUsername">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="Password" field="dtpPassword">
+      <f:password />
+    </f:entry>
+    <f:validateButton
+      title="Test Connection" progress="Connecting to DTP"
+        method="testConnection" with="dtpUrl,dtpUsername,dtpPassword"/>
   </f:section>
 </j:jelly>
