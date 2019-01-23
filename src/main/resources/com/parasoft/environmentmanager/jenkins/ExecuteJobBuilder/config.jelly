@@ -27,8 +27,8 @@
   <f:block>
     <table>
       <f:optionalBlock name="publish" title="Publish test execution results to DTP" checked="${instance.publish}" inline="true">
-        <f:entry title="Project name" field="projectName">
-          <f:textbox />
+        <f:entry title="Project" field="projectId">
+          <f:select />
         </f:entry>
         <f:entry title="Build ID" field="buildId">
           <f:textbox />
