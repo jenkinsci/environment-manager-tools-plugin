@@ -59,6 +59,9 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 		private String emUrl;
 		private String username;
 		private Secret password;
+		private String dtpUrl;
+		private String dtpUsername;
+		private Secret dtpPassword;
 
 		public EnvironmentManagerPluginDescriptor() {
 			super(EnvironmentManagerPlugin.class);
@@ -70,12 +73,21 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 			String oldEmUrl = emUrl;
 			String oldUsername = username;
 			Secret oldPassword = password;
+			String oldDtpUrl = dtpUrl;
+			String oldDtpUsername = dtpUsername;
+			Secret oldDtpPassword = dtpPassword;
 			emUrl = formData.getString("emUrl");
 			username = formData.getString("username");
 			password = Secret.fromString(formData.getString("password"));
+			dtpUrl = formData.getString("dtpUrl");
+			dtpUsername = formData.getString("dtpUsername");
+			dtpPassword = Secret.fromString(formData.getString("dtpPassword"));
 			if (emUrl.equals(oldEmUrl) &&
 				username.equals(oldUsername) &&
-				password.equals(oldPassword))
+				password.equals(oldPassword) &&
+				dtpUrl.equals(oldDtpUrl) &&
+				dtpUsername.equals(oldDtpUsername) &&
+				dtpPassword.equals(oldDtpPassword))
 			{
 				// nothing changed so don't test connection and don't save anything
 				return true;
@@ -128,6 +140,18 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 
 		public Secret getPassword() {
 			return password;
+		}
+
+		public String getDtpUrl() {
+			return dtpUrl;
+		}
+
+		public String getDtpUsername() {
+			return dtpUsername;
+		}
+
+		public Secret getDtpPassword() {
+			return dtpPassword;
 		}
 
 		public FormValidation doTestConnection(@QueryParameter String emUrl, @QueryParameter String username, @QueryParameter String password) {
