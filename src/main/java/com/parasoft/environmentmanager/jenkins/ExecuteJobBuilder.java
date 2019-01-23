@@ -26,6 +26,8 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import com.parasoft.dtp.client.api.Projects;
+import com.parasoft.dtp.client.impl.ProjectsImpl;
 import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Jobs;
 import com.parasoft.em.client.impl.JobsImpl;
@@ -52,7 +54,7 @@ public class ExecuteJobBuilder extends Builder {
 	private String jobName;
 	private String jobType;
 	private boolean publish;
-	private String projectName;
+	private long projectId;
 	private String buildId;
 	private String sessionTag;
 
@@ -62,7 +64,7 @@ public class ExecuteJobBuilder extends Builder {
 		String jobName,
 		String jobType,
 		boolean publish,
-		String projectName,
+		long projectId,
 		String buildId,
 		String sessionTag)
 	{
@@ -71,7 +73,7 @@ public class ExecuteJobBuilder extends Builder {
 		this.jobName = jobName;
 		this.jobType = jobType;
 		this.publish = publish;
-		this.projectName = projectName;
+		this.projectId = projectId;
 		this.buildId = buildId;
 		this.sessionTag = sessionTag;
 	}
@@ -100,8 +102,8 @@ public class ExecuteJobBuilder extends Builder {
 		return publish;
 	}
 
-	public String getProjectName() {
-		return projectName;
+	public long getProjectId() {
+		return projectId;
 	}
 
 	public String getBuildId() {
@@ -218,7 +220,7 @@ public class ExecuteJobBuilder extends Builder {
 				String emUrl = pluginDescriptor.getEmUrl();
 				String username = pluginDescriptor.getUsername();
 				Secret password = pluginDescriptor.getPassword();
-				if (emUrl != null) {
+				if ((emUrl != null) && !emUrl.isEmpty()) {
 					Jobs jobs = new JobsImpl(emUrl, username, password.getPlainText());
 					JSONObject envs = jobs.getJobs();
 					if (envs.has("jobs")) {
@@ -228,6 +230,27 @@ public class ExecuteJobBuilder extends Builder {
 							String name = job.getString("name");
 							m.add(name, job.getString("id"));
 						}
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return m;
+		}
+
+		public ListBoxModel doFillProjectIdItems() {
+			ListBoxModel m = new ListBoxModel();
+			try {
+				EnvironmentManagerPluginDescriptor pluginDescriptor =
+					EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+				String dtpUrl = pluginDescriptor.getDtpUrl();
+				String dtpUsername = pluginDescriptor.getDtpUsername();
+				Secret dtpPassword = pluginDescriptor.getDtpPassword();
+				if ((dtpUrl != null) && !dtpUrl.isEmpty()) {
+					Projects projects = new ProjectsImpl(dtpUrl, dtpUsername, dtpPassword.getPlainText());
+					for (JSONObject proj : projects.getProjects()) {
+						String name = proj.getString("name");
+						m.add(name, proj.getString("id"));
 					}
 				}
 			} catch (IOException e) {
