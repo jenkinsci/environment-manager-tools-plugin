@@ -40,6 +40,6 @@
     </f:entry>
     <f:validateButton
       title="Test Connection" progress="Connecting to DTP"
-        method="testConnection" with="dtpUrl,dtpUsername,dtpPassword"/>
+        method="dtpTestConnection" with="dtpUrl,dtpUsername,dtpPassword"/>
   </f:section>
 </j:jelly>

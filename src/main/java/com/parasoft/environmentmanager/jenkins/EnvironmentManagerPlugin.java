@@ -22,6 +22,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import com.parasoft.dtp.client.api.Services;
+import com.parasoft.dtp.client.impl.ServicesImpl;
 import com.parasoft.em.client.api.Environments;
 import com.parasoft.em.client.impl.EnvironmentsImpl;
 
@@ -185,6 +187,16 @@ public class EnvironmentManagerPlugin extends JobProperty<Job<?, ?>> {
 			}
 			return FormValidation.ok("Successfully connected to Continuous Testing Platform");
 		}
-	}
 
+		public FormValidation doDtpTestConnection(@QueryParameter String dtpUrl, @QueryParameter String dtpUsername, @QueryParameter String dtpPassword) {
+			Secret secret = Secret.fromString(dtpPassword);
+			try {
+				Services services = new ServicesImpl(dtpUrl, dtpUsername, secret.getPlainText());
+				services.getServices();
+			} catch (IOException e) {
+				return FormValidation.error(e, "Unable to connect to DTP");
+			}
+			return FormValidation.ok("Successfully connected to DTP");
+		}
+	}
 }
