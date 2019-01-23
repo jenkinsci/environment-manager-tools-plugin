@@ -24,4 +24,19 @@
       </f:radioBlock>
     </table>
   </f:block>
+  <f:block>
+    <table>
+      <f:optionalBlock name="publish" title="Publish test execution results to DTP" checked="${instance.publish}" inline="true">
+        <f:entry title="Project name" field="projectName">
+          <f:textbox />
+        </f:entry>
+        <f:entry title="Build ID" field="buildId">
+          <f:textbox />
+        </f:entry>
+        <f:entry title="Session tag" field="sessionTag">
+          <f:textbox />
+        </f:entry>
+      </f:optionalBlock>
+    </table>
+  </f:block>
 </j:jelly>

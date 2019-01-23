@@ -51,17 +51,29 @@ public class ExecuteJobBuilder extends Builder {
 	private long jobId;
 	private String jobName;
 	private String jobType;
+	private boolean publish;
+	private String projectName;
+	private String buildId;
+	private String sessionTag;
 
 	@DataBoundConstructor
 	public ExecuteJobBuilder(
 		long jobId,
 		String jobName,
-		String jobType)
+		String jobType,
+		boolean publish,
+		String projectName,
+		String buildId,
+		String sessionTag)
 	{
 		super();
 		this.jobId = jobId;
 		this.jobName = jobName;
 		this.jobType = jobType;
+		this.publish = publish;
+		this.projectName = projectName;
+		this.buildId = buildId;
+		this.sessionTag = sessionTag;
 	}
 
 	public long getJobId() {
@@ -82,6 +94,22 @@ public class ExecuteJobBuilder extends Builder {
 			return JOB_BY_ID.equals(type);
 		}
 		return jobType.equals(type);
+	}
+
+	public boolean getPublish() {
+		return publish;
+	}
+
+	public String getProjectName() {
+		return projectName;
+	}
+
+	public String getBuildId() {
+		return buildId;
+	}
+
+	public String getSessionTag() {
+		return sessionTag;
 	}
 
 	@Override
