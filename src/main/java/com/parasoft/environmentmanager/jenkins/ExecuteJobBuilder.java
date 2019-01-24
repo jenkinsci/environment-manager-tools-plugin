@@ -249,7 +249,7 @@ public class ExecuteJobBuilder extends Builder {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Connection", "Keep-Alive");
         connection.setRequestProperty("Cache-Control", "no-cache");
-        connection.setRequestProperty("Content-Type", " text/xml");
+        connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
         
         connection.connect();
         DataOutputStream request = new DataOutputStream(
