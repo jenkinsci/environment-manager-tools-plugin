@@ -57,6 +57,10 @@ public class ExecuteJobBuilder extends Builder {
 
 	private static final String JOB_BY_ID = "jobById";
 	private static final String JOB_BY_NAME = "jobByName";
+	private static final String ATTACHMENT_NAME = "file";
+	private static final String CRLF = "\r\n";
+	private static final String HYPHENS = "--";
+	private static final String BOUNDARY =  "*****";
 
 	private long jobId;
 	private String jobName;
@@ -231,12 +235,7 @@ public class ExecuteJobBuilder extends Builder {
 	
 	private boolean postToDataCollector(FilePath reportFile, String dataCollector, String username, String password, PrintStream logger) throws IOException, InterruptedException {
 	    boolean result = true;
-        String attachmentName = "file";
         String attachmentFileName = reportFile.getBaseName();
-        String crlf = "\r\n";
-        String twoHyphens = "--";
-        String boundary =  "*****";
-        
         URL url = new URL (dataCollector);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
@@ -249,36 +248,32 @@ public class ExecuteJobBuilder extends Builder {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Connection", "Keep-Alive");
         connection.setRequestProperty("Cache-Control", "no-cache");
-        connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+        connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
         
         connection.connect();
         DataOutputStream request = new DataOutputStream(
                 connection.getOutputStream());
         InputStream is = reportFile.read();
-        request.writeBytes(twoHyphens + boundary + crlf);
+        request.writeBytes(HYPHENS + BOUNDARY + CRLF);
         request.writeBytes("Content-Disposition: form-data; name=\"" +
-            attachmentName + "\";filename=\"" + 
-            attachmentFileName + "\"" + crlf);
-        request.writeBytes(crlf);
+            ATTACHMENT_NAME + "\";filename=\"" + 
+            attachmentFileName + "\"" + CRLF);
+        request.writeBytes(CRLF);
         byte[] buffer = new byte[1024];
         int bytes_read = -1;  
         while((bytes_read = is.read(buffer)) != -1) {
             request.write(buffer, 0, bytes_read);
         }
-        
-        request.writeBytes(crlf);
-        request.writeBytes(twoHyphens + boundary + 
-            twoHyphens + crlf);
+        request.writeBytes(CRLF);
+        request.writeBytes(HYPHENS + BOUNDARY + HYPHENS + CRLF);
         request.flush();
         request.close();
         is.close();
-        String response = connection.getResponseMessage();
         int code = connection.getResponseCode();
         connection.disconnect();
         if (code >= 200 && code <= 299) {
             logger.println("Successfully published report to DTP.");
         } else {
-            logger.println(code + " " + response);
             logger.println("ERROR: unable to publish report to DTP.");
         }
         return result;
