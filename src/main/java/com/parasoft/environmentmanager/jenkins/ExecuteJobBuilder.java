@@ -231,9 +231,17 @@ public class ExecuteJobBuilder extends Builder {
 							m.add(name, job.getString("id"));
 						}
 					}
+					if (m.isEmpty()) {
+						m.add("-- No jobs defined --");
+					}
+				} else {
+					m.add("-- Global settings not configured --");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
+				if (m.isEmpty()) {
+					m.add("-- Cannot connect to CTP --");
+				}
 			}
 			return m;
 		}
@@ -252,9 +260,17 @@ public class ExecuteJobBuilder extends Builder {
 						String name = proj.getString("name");
 						m.add(name, proj.getString("id"));
 					}
+					if (m.isEmpty()) {
+						m.add("-- No projects defined --");
+					}
+				} else {
+					m.add("-- Global settings not configured --");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
+				if (m.isEmpty()) {
+					m.add("-- Cannot connect to DTP --");
+				}
 			}
 			return m;
 		}
