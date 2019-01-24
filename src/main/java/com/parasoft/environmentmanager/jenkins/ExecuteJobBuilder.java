@@ -16,18 +16,26 @@
 
 package com.parasoft.environmentmanager.jenkins;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.codec.binary.Base64;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import com.parasoft.dtp.client.api.Projects;
+import com.parasoft.dtp.client.api.Services;
 import com.parasoft.dtp.client.impl.ProjectsImpl;
+import com.parasoft.dtp.client.impl.ServicesImpl;
 import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Jobs;
 import com.parasoft.em.client.impl.JobsImpl;
@@ -174,6 +182,11 @@ public class ExecuteJobBuilder extends Builder {
 						reportDir.mkdirs();
 						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
 						reportXmlFile.copyFrom(jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml"));
+						
+						if(publish) {
+						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
+						}
+						
 					} catch (IOException e) {
 						// ignore exception: downloading report.xml was not supported prior to CTP 3.1.3
 					}
@@ -181,6 +194,94 @@ public class ExecuteJobBuilder extends Builder {
 			}
 		}
 		return result;
+	}
+	
+	private boolean publishReport(FilePath reportFile, PrintStream logger){
+	    logger.println("Publishing Report to DTP...");
+	    boolean result = true;
+	    EnvironmentManagerPluginDescriptor pluginDescriptor = EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+        String dtp = pluginDescriptor.getDtpUrl();
+        String username = pluginDescriptor.getDtpUsername();
+        Secret password = pluginDescriptor.getDtpPassword();
+      
+        Services services = new ServicesImpl(dtp, username, password.getPlainText());
+        String dataCollector = null;
+        try {
+            dataCollector = services.getDataCollectorV2();
+            logger.println("Connecting to DataCollector at: " + dataCollector);
+        } catch (IOException e) {
+           //unable to find datacollector url from services api
+           logger.println("ERROR: Unable to connect to DataCollector.");
+           result = false;
+        }
+        
+        if (result && dataCollector != null) {
+            try {
+                result = postToDataCollector(reportFile, dataCollector, username, password.getPlainText(), logger);
+            } catch (IOException e) {
+                result = false;
+                logger.println("ERROR: unable to publish report to DTP.");
+            } catch (InterruptedException e) {
+                result = false;
+                logger.println("ERROR: unable to publish report to DTP.");
+            }
+        }
+        return result;
+	}
+	
+	private boolean postToDataCollector(FilePath reportFile, String dataCollector, String username, String password, PrintStream logger) throws IOException, InterruptedException {
+	    boolean result = true;
+        String attachmentName = "file";
+        String attachmentFileName = reportFile.getBaseName();
+        String crlf = "\r\n";
+        String twoHyphens = "--";
+        String boundary =  "*****";
+        
+        URL url = new URL (dataCollector);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        if (username != null) {
+            String encoding = username + ":" + password;
+            encoding = Base64.encodeBase64String(encoding.getBytes("UTF-8"));
+            connection.setRequestProperty("Authorization", "Basic " + encoding);
+        }
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Connection", "Keep-Alive");
+        connection.setRequestProperty("Cache-Control", "no-cache");
+        connection.setRequestProperty("Content-Type", " text/xml");
+        
+        connection.connect();
+        DataOutputStream request = new DataOutputStream(
+                connection.getOutputStream());
+        InputStream is = reportFile.read();
+        request.writeBytes(twoHyphens + boundary + crlf);
+        request.writeBytes("Content-Disposition: form-data; name=\"" +
+            attachmentName + "\";filename=\"" + 
+            attachmentFileName + "\"" + crlf);
+        request.writeBytes(crlf);
+        byte[] buffer = new byte[1024];
+        int bytes_read = -1;  
+        while((bytes_read = is.read(buffer)) != -1) {
+            request.write(buffer, 0, bytes_read);
+        }
+        
+        request.writeBytes(crlf);
+        request.writeBytes(twoHyphens + boundary + 
+            twoHyphens + crlf);
+        request.flush();
+        request.close();
+        is.close();
+        String response = connection.getResponseMessage();
+        int code = connection.getResponseCode();
+        connection.disconnect();
+        if (code >= 200 && code <= 299) {
+            logger.println("Successfully published report to DTP.");
+        } else {
+            logger.println(code + " " + response);
+            logger.println("ERROR: unable to publish report to DTP.");
+        }
+        return result;
 	}
 
 	@Override
