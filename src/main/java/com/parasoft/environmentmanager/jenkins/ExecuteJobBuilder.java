@@ -215,7 +215,9 @@ public class ExecuteJobBuilder extends Builder {
 									reportInputStream);
 							} catch (IOException e) {
 							    connectToDTP = false;
-							    listener.getLogger().println("Cannot connect to DTP: " + e.getLocalizedMessage());
+							    if (publish) {
+							        listener.getLogger().println("Cannot connect to DTP: " + e.getLocalizedMessage());
+							    }
 							    
 							}
 						}
