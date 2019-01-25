@@ -64,6 +64,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.Secret;
+import hudson.util.ListBoxModel.Option;
 import hudson.util.ListBoxModel;
 
 public class ExecuteJobBuilder extends Builder {
@@ -351,15 +352,17 @@ public class ExecuteJobBuilder extends Builder {
 						}
 					}
 					if (m.isEmpty()) {
-						m.add("-- No jobs defined --");
+						m.add("-- No jobs defined --", "0");
+					} else {
+						m.add(0, new Option("-- Select a job --", "0"));
 					}
 				} else {
-					m.add("-- Global settings not configured --");
+					m.add("-- Global settings not configured --", "0");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				if (m.isEmpty()) {
-					m.add("-- Cannot connect to CTP --");
+					m.add("-- Cannot connect to CTP --", "0");
 				}
 			}
 			return m;
@@ -380,15 +383,17 @@ public class ExecuteJobBuilder extends Builder {
 						m.add(name, proj.getString("id"));
 					}
 					if (m.isEmpty()) {
-						m.add("-- No projects defined --");
+						m.add("-- No projects defined --", "0");
+					} else {
+						m.add(0, new Option("-- Select a project --", "0"));
 					}
 				} else {
-					m.add("-- Global settings not configured --");
+					m.add("-- Global settings not configured --", "0");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				if (m.isEmpty()) {
-					m.add("-- Cannot connect to DTP --");
+					m.add("-- Cannot connect to DTP --", "0");
 				}
 			}
 			return m;
