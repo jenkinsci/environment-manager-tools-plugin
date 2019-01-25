@@ -191,6 +191,7 @@ public class ExecuteJobBuilder extends Builder {
 						continue;
 					}
 					try {
+					    boolean connectToDTP = true;
 						InputStream reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
 						String projectName = null, 
 						        expandedBuildId = null, 
@@ -213,19 +214,25 @@ public class ExecuteJobBuilder extends Builder {
 									expandedSessionTag,
 									reportInputStream);
 							} catch (IOException e) {
-								// ignore exception: cannot connect to DTP to get project name
+							    connectToDTP = false;
+							    listener.getLogger().println("Cannot connect to DTP: " + e.getLocalizedMessage());
+							    
 							}
 						}
 						FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
 						reportDir.mkdirs();
 						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
 						reportXmlFile.copyFrom(reportInputStream);
-						
-						if (publish) {
-					        listener.getLogger().println("Project: " + (projectName == null || projectName.isEmpty() ? "Not Specified" : projectName));    
-					        listener.getLogger().println("Build ID: " + (expandedBuildId == null  || expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
-					        listener.getLogger().println("Session Tag: " + (expandedSessionTag == null ||expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
-						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
+						if (publish) { 
+						    //fail the job if publish is enabled but cannot connect to DTP
+						    if (connectToDTP) {
+    					        listener.getLogger().println("Project: " + (projectName == null || projectName.isEmpty() ? "Not Specified" : projectName));    
+    					        listener.getLogger().println("Build ID: " + (expandedBuildId == null  || expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
+    					        listener.getLogger().println("Session Tag: " + (expandedSessionTag == null ||expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
+    						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
+						    } else {
+						        result = false;
+						    }
 						}
 						
 					} catch (IOException e) {
