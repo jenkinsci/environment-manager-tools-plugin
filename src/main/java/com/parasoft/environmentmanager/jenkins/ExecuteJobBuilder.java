@@ -223,8 +223,8 @@ public class ExecuteJobBuilder extends Builder {
 						
 						if (publish) {
 					        listener.getLogger().println("Project: " + (projectName == null || projectName.isEmpty() ? "Not Specified" : projectName));    
-					        listener.getLogger().println("Build ID: " + (expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
-					        listener.getLogger().println("Session Tag: " + (expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
+					        listener.getLogger().println("Build ID: " + (expandedBuildId == null  || expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
+					        listener.getLogger().println("Session Tag: " + (expandedSessionTag == null ||expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
 						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
 						}
 						
