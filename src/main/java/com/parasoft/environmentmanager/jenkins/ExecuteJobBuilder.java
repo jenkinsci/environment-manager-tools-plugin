@@ -16,19 +16,29 @@
 
 package com.parasoft.environmentmanager.jenkins;
 
-import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -57,10 +67,6 @@ public class ExecuteJobBuilder extends Builder {
 
 	private static final String JOB_BY_ID = "jobById";
 	private static final String JOB_BY_NAME = "jobByName";
-	private static final String ATTACHMENT_NAME = "file";
-	private static final String CRLF = "\r\n";
-	private static final String HYPHENS = "--";
-	private static final String BOUNDARY =  "*****";
 
 	private long jobId;
 	private String jobName;
@@ -220,61 +226,34 @@ public class ExecuteJobBuilder extends Builder {
         }
         
         if (result && dataCollector != null) {
-            try {
-                result = postToDataCollector(reportFile, dataCollector, username, password.getPlainText(), logger);
-            } catch (IOException e) {
-                result = false;
-                logger.println("ERROR: unable to publish report to DTP.");
-            } catch (InterruptedException e) {
-                result = false;
+            result = postToDataCollector(reportFile, dataCollector, username, password.getPlainText(), logger);
+            if (result) {
+                logger.println("Successfully published report to DTP.");
+            } else {
                 logger.println("ERROR: unable to publish report to DTP.");
             }
         }
         return result;
 	}
 	
-	private boolean postToDataCollector(FilePath reportFile, String dataCollector, String username, String password, PrintStream logger) throws IOException, InterruptedException {
+	private boolean postToDataCollector(FilePath reportFile, String dataCollector, String username, String password, PrintStream logger) {
 	    boolean result = true;
-        String attachmentFileName = reportFile.getBaseName();
-        URL url = new URL (dataCollector);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setDoInput(true);
-        if (username != null) {
-            String encoding = username + ":" + password;
-            encoding = Base64.encodeBase64String(encoding.getBytes("UTF-8"));
-            connection.setRequestProperty("Authorization", "Basic " + encoding);
-        }
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Connection", "Keep-Alive");
-        connection.setRequestProperty("Cache-Control", "no-cache");
-        connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
-        
-        connection.connect();
-        DataOutputStream request = new DataOutputStream(
-                connection.getOutputStream());
-        InputStream is = reportFile.read();
-        request.writeBytes(HYPHENS + BOUNDARY + CRLF);
-        request.writeBytes("Content-Disposition: form-data; name=\"" +
-            ATTACHMENT_NAME + "\";filename=\"" + 
-            attachmentFileName + "\"" + CRLF);
-        request.writeBytes(CRLF);
-        byte[] buffer = new byte[1024];
-        int bytes_read = -1;  
-        while((bytes_read = is.read(buffer)) != -1) {
-            request.write(buffer, 0, bytes_read);
-        }
-        request.writeBytes(CRLF);
-        request.writeBytes(HYPHENS + BOUNDARY + HYPHENS + CRLF);
-        request.flush();
-        request.close();
-        is.close();
-        int code = connection.getResponseCode();
-        connection.disconnect();
-        if (code >= 200 && code <= 299) {
-            logger.println("Successfully published report to DTP.");
-        } else {
-            logger.println("ERROR: unable to publish report to DTP.");
+	    HttpEntity entity = MultipartEntityBuilder.create().setContentType(ContentType.MULTIPART_FORM_DATA)
+                .addPart("file", new FileBody(new File(reportFile.getRemote())))
+                .build();
+        HttpPost request = new HttpPost(dataCollector);
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+        request.setEntity(entity);
+        HttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
+        HttpResponse response;
+        try {
+            response = client.execute(request);
+            result = response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+        } catch (ClientProtocolException e) {
+            result = false;
+        } catch (IOException e) {
+            result = false;
         }
         return result;
 	}
