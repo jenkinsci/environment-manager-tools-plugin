@@ -192,16 +192,20 @@ public class ExecuteJobBuilder extends Builder {
 						continue;
 					}
 					try {
+					    boolean connectToDTP = true;
 						InputStream reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
+						String projectName = null, 
+						        expandedBuildId = null, 
+						        expandedSessionTag = null;
 						String dtpUrl = pluginDescriptor.getDtpUrl();
 						if ((dtpUrl != null) && !dtpUrl.isEmpty()) {
 							String dtpUsername = pluginDescriptor.getDtpUsername();
 							Secret dtpPassword = pluginDescriptor.getDtpPassword();
 							try {
 								Projects projects = new ProjectsImpl(dtpUrl, dtpUsername, dtpPassword.getPlainText());
-								String projectName = projects.getProject(projectId).getString("name");
-								String expandedBuildId = envVars.expand(buildId);
-								String expandedSessionTag = envVars.expand(sessionTag);
+								projectName = projects.getProject(projectId).getString("name");
+								expandedBuildId = envVars.expand(buildId);
+								expandedSessionTag = envVars.expand(sessionTag);
 								if ((expandedSessionTag != null) && !expandedSessionTag.isEmpty() && (i > 0)) {
 									expandedSessionTag += "-" + (i + 1); // unique session tag in DTP for each report
 								}
@@ -211,16 +215,27 @@ public class ExecuteJobBuilder extends Builder {
 									expandedSessionTag,
 									reportInputStream);
 							} catch (IOException e) {
-								// ignore exception: cannot connect to DTP to get project name
+							    connectToDTP = false;
+							    if (publish) {
+							        listener.getLogger().println("Cannot connect to DTP: " + e.getLocalizedMessage());
+							    }
+							    
 							}
 						}
 						FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
 						reportDir.mkdirs();
 						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
 						reportXmlFile.copyFrom(reportInputStream);
-						
-						if(publish) {
-						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
+						if (publish) { 
+						    //fail the job if publish is enabled but cannot connect to DTP
+						    if (connectToDTP) {
+    					        listener.getLogger().println("Project: " + (projectName == null || projectName.isEmpty() ? "Not Specified" : projectName));    
+    					        listener.getLogger().println("Build ID: " + (expandedBuildId == null  || expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
+    					        listener.getLogger().println("Session Tag: " + (expandedSessionTag == null ||expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
+    						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
+						    } else {
+						        result = false;
+						    }
 						}
 						
 					} catch (IOException e) {
@@ -243,7 +258,6 @@ public class ExecuteJobBuilder extends Builder {
         String dataCollector = null;
         try {
             dataCollector = services.getDataCollectorV2();
-            logger.println("Connecting to DataCollector at: " + dataCollector);
             result = postToDataCollector(reportFile, dataCollector, username, password.getPlainText(), logger);
         } catch (IOException e) {
             result = false;
