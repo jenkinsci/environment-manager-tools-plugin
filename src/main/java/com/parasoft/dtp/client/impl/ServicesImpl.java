@@ -34,4 +34,9 @@ public class ServicesImpl extends DTPClient implements Services {
         return services;
 	}
 
+    @Override
+    public String getDataCollectorV2() throws IOException {
+        JSONObject servicesJSON = getServices().getJSONObject("services");
+        return servicesJSON.getString("dataCollectorV2"); 
+    }
 }

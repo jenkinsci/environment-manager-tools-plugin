@@ -16,18 +16,36 @@
 
 package com.parasoft.environmentmanager.jenkins;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import com.parasoft.dtp.client.api.Projects;
+import com.parasoft.dtp.client.api.Services;
 import com.parasoft.dtp.client.impl.ProjectsImpl;
+import com.parasoft.dtp.client.impl.ServicesImpl;
 import com.parasoft.em.client.api.EventMonitor;
 import com.parasoft.em.client.api.Jobs;
 import com.parasoft.em.client.impl.JobsImpl;
@@ -36,10 +54,12 @@ import com.parasoft.environmentmanager.jenkins.EnvironmentManagerPlugin.Environm
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.Secret;
@@ -174,6 +194,11 @@ public class ExecuteJobBuilder extends Builder {
 						reportDir.mkdirs();
 						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
 						reportXmlFile.copyFrom(jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml"));
+						
+						if(publish) {
+						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
+						}
+						
 					} catch (IOException e) {
 						// ignore exception: downloading report.xml was not supported prior to CTP 3.1.3
 					}
@@ -182,6 +207,77 @@ public class ExecuteJobBuilder extends Builder {
 		}
 		return result;
 	}
+	
+	private boolean publishReport(FilePath reportFile, PrintStream logger){
+	    logger.println("Publishing Report to DTP...");
+	    boolean result = true;
+	    EnvironmentManagerPluginDescriptor pluginDescriptor = EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
+        String dtp = pluginDescriptor.getDtpUrl();
+        String username = pluginDescriptor.getDtpUsername();
+        Secret password = pluginDescriptor.getDtpPassword();
+        Services services = new ServicesImpl(dtp, username, password.getPlainText());
+        String dataCollector = null;
+        try {
+            dataCollector = services.getDataCollectorV2();
+            logger.println("Connecting to DataCollector at: " + dataCollector);
+            result = postToDataCollector(reportFile, dataCollector, username, password.getPlainText(), logger);
+        } catch (IOException e) {
+            result = false;
+            e.printStackTrace();
+        }
+        if (result) {
+            logger.println("Successfully published report to DTP.");
+        } else {
+            logger.println("ERROR: Unable to publish report to DTP.");
+        }
+        
+        return result;
+	}
+	
+	private boolean postToDataCollector(FilePath reportFile, String dataCollector, String username, String password, PrintStream logger) {
+	    boolean result = true;
+        try {
+            result = Boolean.valueOf(reportFile.act(new DataCollectorUploadable(dataCollector, username, password)));
+        } catch (IOException e) {
+            result = false;
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            result = false;
+            e.printStackTrace();
+        } 
+        return result;
+	}
+	
+	private static class DataCollectorUploadable implements FileCallable<String> {
+	    private static final long serialVersionUID = 1L;
+	    private String url;
+	    private String username;
+	    private String password;
+	    
+	    public DataCollectorUploadable(String url,String username, String password) {
+	        this.url = url;
+	        this.username = username;
+	        this.password = password;
+	    }
+	    
+	    @Override
+	    public String invoke(File file, VirtualChannel channel) throws IOException, InterruptedException {
+            HttpEntity entity = MultipartEntityBuilder.create().setContentType(ContentType.MULTIPART_FORM_DATA)
+                    .addPart("file", new FileBody(file))
+                    .build();
+            HttpPost request = new HttpPost(url);
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+            request.setEntity(entity);
+            HttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
+            HttpResponse response = client.execute(request);
+            return Boolean.toString(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK);
+	    }
+        @Override
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            //no role check needed
+        }
+	  }
 
 	@Override
 	public DescriptorImpl getDescriptor() {

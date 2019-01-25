@@ -22,4 +22,5 @@ import net.sf.json.JSONObject;
 
 public interface Services {
     JSONObject getServices() throws IOException;
+    String getDataCollectorV2() throws IOException;
 }
