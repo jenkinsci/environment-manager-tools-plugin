@@ -18,6 +18,7 @@ package com.parasoft.environmentmanager.jenkins;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -190,10 +191,32 @@ public class ExecuteJobBuilder extends Builder {
 						continue;
 					}
 					try {
+						InputStream reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
+						String dtpUrl = pluginDescriptor.getDtpUrl();
+						if ((dtpUrl != null) && !dtpUrl.isEmpty()) {
+							String dtpUsername = pluginDescriptor.getDtpUsername();
+							Secret dtpPassword = pluginDescriptor.getDtpPassword();
+							try {
+								Projects projects = new ProjectsImpl(dtpUrl, dtpUsername, dtpPassword.getPlainText());
+								String projectName = projects.getProject(projectId).getString("name");
+								String expandedBuildId = envVars.expand(buildId);
+								String expandedSessionTag = envVars.expand(sessionTag);
+								if ((expandedSessionTag != null) && !expandedSessionTag.isEmpty() && (i > 0)) {
+									expandedSessionTag += "-" + (i + 1); // unique session tag in DTP for each report
+								}
+								reportInputStream = new ReportSettingsInjector(
+									projectName,
+									expandedBuildId,
+									expandedSessionTag,
+									reportInputStream);
+							} catch (IOException e) {
+								// ignore exception: cannot connect to DTP to get project name
+							}
+						}
 						FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
 						reportDir.mkdirs();
 						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
-						reportXmlFile.copyFrom(jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml"));
+						reportXmlFile.copyFrom(reportInputStream);
 						
 						if(publish) {
 						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
