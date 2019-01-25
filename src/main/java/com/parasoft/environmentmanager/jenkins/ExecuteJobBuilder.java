@@ -192,15 +192,18 @@ public class ExecuteJobBuilder extends Builder {
 					}
 					try {
 						InputStream reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
+						String projectName = null, 
+						        expandedBuildId = null, 
+						        expandedSessionTag = null;
 						String dtpUrl = pluginDescriptor.getDtpUrl();
 						if ((dtpUrl != null) && !dtpUrl.isEmpty()) {
 							String dtpUsername = pluginDescriptor.getDtpUsername();
 							Secret dtpPassword = pluginDescriptor.getDtpPassword();
 							try {
 								Projects projects = new ProjectsImpl(dtpUrl, dtpUsername, dtpPassword.getPlainText());
-								String projectName = projects.getProject(projectId).getString("name");
-								String expandedBuildId = envVars.expand(buildId);
-								String expandedSessionTag = envVars.expand(sessionTag);
+								projectName = projects.getProject(projectId).getString("name");
+								expandedBuildId = envVars.expand(buildId);
+								expandedSessionTag = envVars.expand(sessionTag);
 								if ((expandedSessionTag != null) && !expandedSessionTag.isEmpty() && (i > 0)) {
 									expandedSessionTag += "-" + (i + 1); // unique session tag in DTP for each report
 								}
@@ -218,7 +221,10 @@ public class ExecuteJobBuilder extends Builder {
 						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
 						reportXmlFile.copyFrom(reportInputStream);
 						
-						if(publish) {
+						if (publish) {
+					        listener.getLogger().println("Project: " + (projectName.isEmpty() ? "Not Specified" : projectName));    
+					        listener.getLogger().println("Build ID: " + (expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
+					        listener.getLogger().println("Session Tag: " + (expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
 						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
 						}
 						
@@ -242,7 +248,6 @@ public class ExecuteJobBuilder extends Builder {
         String dataCollector = null;
         try {
             dataCollector = services.getDataCollectorV2();
-            logger.println("Connecting to DataCollector at: " + dataCollector);
             result = postToDataCollector(reportFile, dataCollector, username, password.getPlainText(), logger);
         } catch (IOException e) {
             result = false;
