@@ -222,7 +222,7 @@ public class ExecuteJobBuilder extends Builder {
 						reportXmlFile.copyFrom(reportInputStream);
 						
 						if (publish) {
-					        listener.getLogger().println("Project: " + (projectName.isEmpty() ? "Not Specified" : projectName));    
+					        listener.getLogger().println("Project: " + (projectName == null || projectName.isEmpty() ? "Not Specified" : projectName));    
 					        listener.getLogger().println("Build ID: " + (expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
 					        listener.getLogger().println("Session Tag: " + (expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
 						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
