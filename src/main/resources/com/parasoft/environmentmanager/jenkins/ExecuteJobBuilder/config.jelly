@@ -12,11 +12,11 @@
   -->
   <f:block>
     <table>
-      <f:radio name="jobType" title="By name" value="jobByName" checked="${instance == null || instance.isJobType('jobByName')}" inline="true">
-      </f:radio>
-      <f:entry title="" field="jobName">
-        <f:textbox />
-      </f:entry>
+      <f:radioBlock name="jobType" title="By name" value="jobByName" checked="${instance == null || instance.isJobType('jobByName')}" inline="true">
+        <f:entry title="" field="jobName">
+          <f:textbox />
+        </f:entry>
+      </f:radioBlock>
       <f:radioBlock name="jobType" title="From list" value="jobById" checked="${instance.isJobType('jobById')}" inline="true">
         <f:entry title="" field="jobId">
           <f:select />
