@@ -104,6 +104,7 @@ public class ExecuteJobBuilder extends Builder {
 		this.jobId = jobId;
 		this.jobName = jobName;
 		this.jobType = jobType;
+		this.abortOnFailure = abortOnFailure;
 		this.publish = publish;
 		this.projectId = projectId;
 		this.buildId = buildId;
