@@ -26,6 +26,7 @@
   </f:block>
   <f:block>
     <table>
+      <f:optionalBlock name="abortOnFailure" title="Abort the build on test failure" checked="${instance.abortOnFailure}" />
       <f:optionalBlock name="publish" title="Publish test execution results to DTP" checked="${instance.publish}" inline="true">
         <f:entry title="Project" field="projectId">
           <f:select />

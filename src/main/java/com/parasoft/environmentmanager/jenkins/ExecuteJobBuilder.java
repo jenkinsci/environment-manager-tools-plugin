@@ -67,6 +67,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -82,6 +83,7 @@ public class ExecuteJobBuilder extends Builder {
 	private long jobId;
 	private String jobName;
 	private String jobType;
+	private boolean abortOnFailure;
 	private boolean publish;
 	private long projectId;
 	private String buildId;
@@ -92,6 +94,7 @@ public class ExecuteJobBuilder extends Builder {
 		long jobId,
 		String jobName,
 		String jobType,
+		boolean abortOnFailure,
 		boolean publish,
 		long projectId,
 		String buildId,
@@ -125,6 +128,10 @@ public class ExecuteJobBuilder extends Builder {
 			return JOB_BY_ID.equals(type);
 		}
 		return jobType.equals(type);
+	}
+
+	public boolean getAbortOnFailure() {
+		return abortOnFailure;
 	}
 
 	public boolean getPublish() {
@@ -176,10 +183,11 @@ public class ExecuteJobBuilder extends Builder {
 			JSONObject jobJSON = jobs.getJob(jobId);
 			jobsToExecute.add(jobJSON);
 		}
+		boolean allTestsPassed = true;
 		for (JSONObject jobJSON : jobsToExecute) {
 			listener.getLogger().println("Executing \"" + jobJSON.getString("name") + "\" on " + emUrl);
 			JSONObject history = jobs.executeJob(jobJSON.getLong("id"));
-			result &= jobs.monitorExecution(history, new EventMonitor() {
+			allTestsPassed &= jobs.monitorExecution(history, new EventMonitor() {
 				public void logMessage(String message) {
 					listener.getLogger().println(message);
 				}
@@ -249,6 +257,14 @@ public class ExecuteJobBuilder extends Builder {
 						// ignore exception: downloading report.xml was not supported prior to CTP 3.1.3
 					}
 				}
+			}
+		}
+		if (!allTestsPassed) {
+			if (abortOnFailure) {
+				build.setResult(Result.FAILURE);
+				result = false;
+			} else {
+				build.setResult(Result.UNSTABLE);
 			}
 		}
 		return result;
