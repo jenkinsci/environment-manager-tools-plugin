@@ -20,6 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -148,6 +153,24 @@ public class JobsImpl extends JSONClient implements Jobs {
 	public InputStream download(String urlPath) throws IOException {
 		URL url = new URL (baseUrl + urlPath);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		if (connection instanceof HttpsURLConnection) {
+			HostnameVerifier hostnameVerifier = null;
+			try {
+				if (trustAllSslSocketFactory == null) {
+					trustAllSslSocketFactory = makeTrustAllSslSocketFactory();
+				}
+				hostnameVerifier = new HostnameVerifier() {
+					@Override
+					public boolean verify(String hostname, SSLSession session) {
+						return true;
+					}
+				};
+				((HttpsURLConnection)connection).setSSLSocketFactory(trustAllSslSocketFactory);
+				((HttpsURLConnection)connection).setHostnameVerifier(hostnameVerifier);
+			} catch (GeneralSecurityException e) {
+			    e.printStackTrace();
+			}
+		}
 		connection.setDoOutput(true);
 		if (username != null) {
 			String encoding = username + ":" + password;

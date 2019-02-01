@@ -23,8 +23,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Set;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
@@ -38,6 +50,7 @@ public class JSONClient {
     protected String baseUrl;
     protected String username;
     protected String password;
+    protected SSLSocketFactory trustAllSslSocketFactory;
     
     public JSONClient(String baseUrl, String username, String password) {
         if (!baseUrl.endsWith("/")) {
@@ -50,11 +63,30 @@ public class JSONClient {
             // empty string is considered no password
             this.password = null;
         }
+        trustAllSslSocketFactory = null;
     }
 
     private HttpURLConnection getConnection(String restPath) throws IOException {
         URL url = new URL (baseUrl + restPath);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        if (connection instanceof HttpsURLConnection) {
+            HostnameVerifier hostnameVerifier = null;
+            try {
+                if (trustAllSslSocketFactory == null) {
+                    trustAllSslSocketFactory = makeTrustAllSslSocketFactory();
+                }
+                hostnameVerifier = new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                };
+                ((HttpsURLConnection)connection).setSSLSocketFactory(trustAllSslSocketFactory);
+                ((HttpsURLConnection)connection).setHostnameVerifier(hostnameVerifier);
+            } catch (GeneralSecurityException e) {
+                e.printStackTrace();
+            }
+        }
         connection.setDoOutput(true);
         connection.setRequestProperty("Accept", "application/json");
         if (username != null) {
@@ -228,5 +260,25 @@ public class JSONClient {
             }
             throw new IOException(restPath + ' ' + responseCode + '\n' + errorMessage);
         }
+    }
+
+    protected static SSLSocketFactory makeTrustAllSslSocketFactory()
+        throws GeneralSecurityException, IOException
+    {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[] {};
+            }
+            public void checkClientTrusted(X509Certificate[] chain,
+                String authType) throws CertificateException {
+            }
+            public void checkServerTrusted(X509Certificate[] chain,
+                String authType) throws CertificateException {
+            }
+        } };
+        SSLContext context = SSLContext.getInstance("TLS"); //$NON-NLS-1$
+        context.init(null, trustAllCerts, new SecureRandom());
+        return context.getSocketFactory();
     }
 }
