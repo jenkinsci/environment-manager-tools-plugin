@@ -37,6 +37,7 @@
         <f:entry title="Session tag" field="sessionTag">
           <f:textbox />
         </f:entry>
+        <f:optionalBlock name="appendEnv" title="Append variable set environment to session tag if configured" checked="${instance.appendEnv}" inline="true" />
       </f:optionalBlock>
     </table>
   </f:block>

@@ -27,6 +27,7 @@ public class ReportSettingsInjector extends InputStream {
     private static final String PROJECT = "project";
     private static final String BUILD_ID = "buildId";
     private static final String TAG = "tag";
+    private static final String EXEC_ENV = "execEnv";
 
     private boolean captureAttributeName;
     private boolean captureElementName;
@@ -40,6 +41,9 @@ public class ReportSettingsInjector extends InputStream {
     private final InputStream buildIdBuffer;
     private final InputStream tagBuffer;
     private final InputStream wrapped;
+    private final InputStream execEnvBuffer;
+    private InputStream appendBuffer;
+    private final String execEnv;
 
     private static InputStream makeBuffer(String text) {
         if ((text != null) && !text.isEmpty()) {
@@ -48,10 +52,13 @@ public class ReportSettingsInjector extends InputStream {
         return null;
     }
 
-    public ReportSettingsInjector(String project, String buildId, String tag, InputStream in) {
+    public ReportSettingsInjector(String project, String buildId, String tag, String execEnv, InputStream in) {
         this.projectBuffer = makeBuffer(project);
         this.buildIdBuffer = makeBuffer(buildId);
         this.tagBuffer = makeBuffer(tag);
+        this.execEnvBuffer = makeBuffer(execEnv);
+        this.execEnv = execEnv;
+        this.appendBuffer = null;
         captureAttributeName = false;
         insideAttributeValue = false;
         captureElementName = false;
@@ -89,6 +96,9 @@ public class ReportSettingsInjector extends InputStream {
         if (replaceAttributeValue) {
             return nextReplacementChar();
         }
+        if ((appendBuffer != null) && (appendBuffer.available() > 0)) {
+            return appendBuffer.read();
+        }
         next = wrapped.read();
         if (finishedInjecting) {
             return next;
@@ -96,6 +106,10 @@ public class ReportSettingsInjector extends InputStream {
         if (!insideQuotes && ((next == '/') || (next == '>'))) {
             captureElementName = false;
             if (RESULTS_SESSION.equals(elementName.toString())) {
+                if ((execEnvBuffer != null) && (execEnvBuffer.available() > 0)) {
+                    appendBuffer = makeBuffer("execEnv=\"" + execEnv + '"' + (char)next);
+                    return ' ';
+                }
                 finishedInjecting = true;
             }
             return next;
@@ -115,6 +129,9 @@ public class ReportSettingsInjector extends InputStream {
                     replaceAttributeValue = true;
                     while (wrapped.read() != '"');
                 } else if ((tagBuffer != null) && TAG.equals(attributeName.toString())) {
+                    replaceAttributeValue = true;
+                    while (wrapped.read() != '"');
+                } else if ((execEnvBuffer != null) && EXEC_ENV.equals(attributeName.toString())) {
                     replaceAttributeValue = true;
                     while (wrapped.read() != '"');
                 }

@@ -24,6 +24,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.sf.json.JSONArray;
@@ -88,6 +89,7 @@ public class ExecuteJobBuilder extends Builder {
 	private long projectId;
 	private String buildId;
 	private String sessionTag;
+	private boolean appendEnv;
 
 	@DataBoundConstructor
 	public ExecuteJobBuilder(
@@ -98,7 +100,8 @@ public class ExecuteJobBuilder extends Builder {
 		boolean publish,
 		long projectId,
 		String buildId,
-		String sessionTag)
+		String sessionTag,
+		boolean appendEnv)
 	{
 		super();
 		this.jobId = jobId;
@@ -109,6 +112,7 @@ public class ExecuteJobBuilder extends Builder {
 		this.projectId = projectId;
 		this.buildId = buildId;
 		this.sessionTag = sessionTag;
+		this.appendEnv = appendEnv;
 	}
 
 	public long getJobId() {
@@ -149,6 +153,10 @@ public class ExecuteJobBuilder extends Builder {
 
 	public String getSessionTag() {
 		return sessionTag;
+	}
+
+	public boolean getAppendEnv() {
+		return appendEnv;
 	}
 
 	@Override
@@ -200,6 +208,12 @@ public class ExecuteJobBuilder extends Builder {
 			history = jobs.getHistory(jobId, history.getLong("id"));
 			JSONArray reportIds = history.optJSONArray("reportIds");
 			if (reportIds != null) {
+				List<String> execEnvs;
+				if (appendEnv) {
+					execEnvs = extractEnvironmentNames(jobJSON);
+				} else {
+					execEnvs = Collections.emptyList();
+				}
 				for (int i = 0; i < reportIds.size(); i++) {
 					String reportUrl = baseUrl + "testreport/" + reportIds.getLong(i) + "/report.html";
 					build.addAction(new ProvisioningEventAction(build, jobJSON.getString("name"), reportUrl, 1, result ? 0 : 1));
@@ -210,9 +224,13 @@ public class ExecuteJobBuilder extends Builder {
 					try {
 					    boolean connectToDTP = true;
 						InputStream reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
-						String projectName = null, 
-						        expandedBuildId = null, 
-						        expandedSessionTag = null;
+						String projectName = null,
+								expandedBuildId = null,
+								expandedSessionTag = null,
+								execEnv = null;
+						if (!execEnvs.isEmpty()) {
+							execEnv = execEnvs.remove(0);
+						}
 						String dtpUrl = pluginDescriptor.getDtpUrl();
 						if ((dtpUrl != null) && !dtpUrl.isEmpty()) {
 							String dtpUsername = pluginDescriptor.getDtpUsername();
@@ -222,13 +240,22 @@ public class ExecuteJobBuilder extends Builder {
 								projectName = projects.getProject(projectId).getString("name");
 								expandedBuildId = envVars.expand(buildId);
 								expandedSessionTag = envVars.expand(sessionTag);
-								if ((expandedSessionTag != null) && !expandedSessionTag.isEmpty() && (i > 0)) {
+								if ((execEnv != null) && !execEnv.isEmpty()) {
+									if (expandedSessionTag == null) {
+										expandedSessionTag = "";
+									}
+									if (!expandedSessionTag.isEmpty()) {
+										expandedSessionTag += '-';
+									}
+									expandedSessionTag += execEnv;
+								} else if ((expandedSessionTag != null) && !expandedSessionTag.isEmpty() && (i > 0)) {
 									expandedSessionTag += "-" + (i + 1); // unique session tag in DTP for each report
 								}
 								reportInputStream = new ReportSettingsInjector(
 									projectName,
 									expandedBuildId,
 									expandedSessionTag,
+									execEnv,
 									reportInputStream);
 							} catch (IOException e) {
 							    connectToDTP = false;
@@ -245,6 +272,7 @@ public class ExecuteJobBuilder extends Builder {
 						if (publish) { 
 						    //fail the job if publish is enabled but cannot connect to DTP
 						    if (connectToDTP) {
+						        listener.getLogger().println("Publishing Report to DTP...");
     					        listener.getLogger().println("Project: " + (projectName == null || projectName.isEmpty() ? "Not Specified" : projectName));    
     					        listener.getLogger().println("Build ID: " + (expandedBuildId == null  || expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
     					        listener.getLogger().println("Session Tag: " + (expandedSessionTag == null ||expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
@@ -270,9 +298,25 @@ public class ExecuteJobBuilder extends Builder {
 		}
 		return result;
 	}
-	
-	private boolean publishReport(FilePath reportFile, PrintStream logger){
-	    logger.println("Publishing Report to DTP...");
+
+	private List<String> extractEnvironmentNames(JSONObject jobJSON) {
+		boolean separate = jobJSON.getBoolean("fork");
+		JSONArray tests = jobJSON.getJSONArray("testScenarioInstances");
+		Long lastTestId = null;
+		List<String> results = new ArrayList<String>();
+		for (int i = 0; i < tests.size(); i++) {
+			JSONObject test = tests.getJSONObject(i);
+			Long testId = test.getLong("testScenarioId");
+			String variableset = test.optString("variableSet");
+			if (separate || (lastTestId == null) || lastTestId.equals(testId)) {
+				results.add(variableset);
+			}
+			lastTestId = testId;
+		}
+		return results;
+	}
+
+	private boolean publishReport(FilePath reportFile, PrintStream logger) {
 	    boolean result = true;
 	    EnvironmentManagerPluginDescriptor pluginDescriptor = EnvironmentManagerPlugin.getEnvironmentManagerPluginDescriptor();
         String dtp = pluginDescriptor.getDtpUrl();
