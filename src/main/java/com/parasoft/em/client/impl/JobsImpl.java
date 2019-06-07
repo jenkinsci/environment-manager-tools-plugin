@@ -90,9 +90,8 @@ public class JobsImpl extends JSONClient implements Jobs {
 		String status = history.optString("status");
 		int lastPercentage = 0;
 		int percentage = 0;
-		while (!"PASSED".equalsIgnoreCase(status) &&
-			!"FAILED".equalsIgnoreCase(status) &&
-			!"CANCELED".equalsIgnoreCase(status))
+		while ("WAITING".equalsIgnoreCase(status) ||
+			"RUNNING".equalsIgnoreCase(status))
 		{
 			if (status != null) {
 				if (!status.equals(lastStatus)) {
