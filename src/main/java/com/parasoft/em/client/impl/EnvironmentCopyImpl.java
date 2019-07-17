@@ -110,9 +110,14 @@ public class EnvironmentCopyImpl extends JSONClient implements EnvironmentCopy {
         }
         if ("FAILURE".equals(response.getString("status"))) {
             monitor.logMessage("Failed to copy environment.");
-            JSONArray deployFailures = response.getJSONArray("deployFailures");
-            for (int i = 0; i < deployFailures.size(); i++) {
-                monitor.logMessage("    " + deployFailures.getString(i));
+            if (response.has("deployFailures")) {
+                JSONArray deployFailures = response.getJSONArray("deployFailures");
+                for (int i = 0; i < deployFailures.size(); i++) {
+                    monitor.logMessage("    " + deployFailures.getString(i));
+                }
+            }
+            if (response.has("message")) {
+                monitor.logMessage(response.getString("message"));
             }
         }
         return false;
