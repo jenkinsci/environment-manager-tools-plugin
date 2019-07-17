@@ -281,6 +281,7 @@ public class EnvironmentManagerBuilder extends Builder {
                 return false;
             }
             targetEnvironmentId = copyStatus.getInt("environmentId");
+            targetInstanceId = 0;
             String instanceName = instance.getString("name");
             JSONObject copiedInstances = environments.getEnvironmentInstances(targetEnvironmentId);
             if (copiedInstances.has("instances")) {
@@ -289,8 +290,13 @@ public class EnvironmentManagerBuilder extends Builder {
                     JSONObject inst = instArray.getJSONObject(i);
                     if (instanceName.equals(inst.getString("name"))) {
                         targetInstanceId = inst.getInt("id");
+                        break;
                     }
                 }
+            }
+            if (targetInstanceId == 0) {
+                listener.getLogger().println("Unable to find environment instance named \"" + instanceName + "\" in the copied environment.");
+                return false;
             }
         }
         listener.getLogger().println("Executing provisioning action on " + emUrl);
