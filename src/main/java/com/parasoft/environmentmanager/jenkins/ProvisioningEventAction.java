@@ -36,6 +36,9 @@ public class ProvisioningEventAction extends AbstractTestResultAction<Provisioni
     }
 
     public String getIconFileName() {
+        if (numberOfFailed > 0) {
+            return "/plugin/environment-manager/icons/Failure-48.gif";
+        }
         return "/plugin/environment-manager/icons/Parasoft-48.gif";
     }
 

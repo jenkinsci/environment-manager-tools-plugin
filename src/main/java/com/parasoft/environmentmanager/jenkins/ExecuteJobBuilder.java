@@ -208,28 +208,38 @@ public class ExecuteJobBuilder extends Builder {
 			history = jobs.getHistory(jobId, history.getLong("id"));
 			JSONArray reportIds = history.optJSONArray("reportIds");
 			if (reportIds != null) {
-				List<String> execEnvs;
-				if (appendEnv) {
-					execEnvs = extractEnvironmentNames(jobJSON);
-				} else {
-					execEnvs = Collections.emptyList();
-				}
+				List<String> execEnvs = extractEnvironmentNames(jobJSON);
 				for (int i = 0; i < reportIds.size(); i++) {
+					String name = jobJSON.getString("name");
 					String reportUrl = baseUrl + "testreport/" + reportIds.getLong(i) + "/report.html";
-					build.addAction(new ProvisioningEventAction(build, jobJSON.getString("name"), reportUrl, 1, result ? 0 : 1));
+					int tests = 1;
+					int failures = result ? 0 : 1;
 					FilePath workspace = build.getWorkspace();
 					if (workspace == null) {
+						build.addAction(new ProvisioningEventAction(build, name, reportUrl, tests, failures));
 						continue;
 					}
+					ReportScanner reportScanner = null;
+					InputStream reportInputStream = null;
 					try {
-					    boolean connectToDTP = true;
-						InputStream reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
+						boolean connectToDTP = true;
+						reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
+						reportScanner = new ReportScanner(reportInputStream);
+						reportInputStream = reportScanner;
 						String projectName = null,
 								expandedBuildId = null,
 								expandedSessionTag = null,
 								execEnv = null;
 						if (!execEnvs.isEmpty()) {
 							execEnv = execEnvs.remove(0);
+						}
+						if ((execEnv != null) && !execEnv.isEmpty()) {
+							name = execEnv;
+						} else {
+							name = jobJSON.getString("name");
+						}
+						if (!appendEnv) {
+							execEnv = null;
 						}
 						String dtpUrl = pluginDescriptor.getDtpUrl();
 						if ((dtpUrl != null) && !dtpUrl.isEmpty()) {
@@ -284,7 +294,20 @@ public class ExecuteJobBuilder extends Builder {
 						
 					} catch (IOException e) {
 						// ignore exception: downloading report.xml was not supported prior to CTP 3.1.3
+					} finally {
+						if (reportInputStream != null) {
+							reportInputStream.close();
+						}
 					}
+					if (reportScanner != null) {
+						if (reportScanner.getFailureCount() > 0) {
+							failures = reportScanner.getFailureCount();
+						}
+						if (reportScanner.getTotalCount() > 0) {
+							tests = reportScanner.getTotalCount();
+						}
+					}
+					build.addAction(new ProvisioningEventAction(build, name, reportUrl, tests, failures));
 				}
 			}
 		}

@@ -163,4 +163,8 @@ public class ReportSettingsInjector extends InputStream {
         return next;
     }
 
+    public void close() throws IOException {
+        wrapped.close();
+    }
+
 }
