@@ -47,11 +47,13 @@ import org.apache.commons.codec.binary.Base64;
 
 public class JSONClient {
     private static int DEFAULT_LIMIT = 50;
+    protected static final int ONE_MINUTE = 60000;
+    protected static final int FIVE_MINUTES = 300000;
     protected String baseUrl;
     protected String username;
     protected String password;
     protected SSLSocketFactory trustAllSslSocketFactory;
-    
+
     public JSONClient(String baseUrl, String username, String password) {
         if (!baseUrl.endsWith("/")) {
             baseUrl += "/";
@@ -94,9 +96,11 @@ public class JSONClient {
             encoding = Base64.encodeBase64String(encoding.getBytes("UTF-8"));
             connection.setRequestProperty("Authorization", "Basic " + encoding);
         }
+        connection.setConnectTimeout(ONE_MINUTE);
+        connection.setReadTimeout(FIVE_MINUTES);
         return connection;
     }
-    
+
     private JSONObject getResponseJSON(InputStream stream) throws IOException {
         BufferedReader in = new BufferedReader (new InputStreamReader (stream, "UTF-8"));
         try {
@@ -113,7 +117,7 @@ public class JSONClient {
         }
         return null;
     }
-    
+
     private String getResponseString(InputStream stream) throws IOException {
         BufferedReader in = new BufferedReader (new InputStreamReader (stream, "UTF-8"));
         try {
@@ -130,13 +134,14 @@ public class JSONClient {
 
     protected JSONObject doGet(String restPath, boolean returnsArray) throws IOException {
         return doGet(restPath, "", returnsArray);
-    }  
-    
+    }
+
     protected JSONObject doGet(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("GET");
         return handleResponse(restPath, connection);
     }
+
     /**
      * Set returnsArray to true if the API method returns a limit of items.  This
      * will cause the call to potentially be made multiple times if there are more
@@ -166,7 +171,7 @@ public class JSONClient {
             return doGet(restPath);
         }
     }
-    
+
     private String addOffset(String path, int offset, String parameter) {
         String result = path + "?limit=" + DEFAULT_LIMIT + "&offset=" + offset;
         if (!parameter.isEmpty() ) {
@@ -174,7 +179,7 @@ public class JSONClient {
         }
         return result;
     }
-    
+
     /**
      * Assumes objects are of the form
      * {
@@ -184,9 +189,9 @@ public class JSONClient {
      *         etc   
      *     ]
      * }
-     * 
+     *
      * and will count the items.
-     * 
+     *
      * @param obj
      * @return
      */
@@ -200,11 +205,11 @@ public class JSONClient {
         }
         return obj.values().size();
     }
-    
+
     /**
      * Assumes that each object contains a single named element of
      * type array.
-     * 
+     *
      * @param source
      * @param dest
      */
@@ -218,7 +223,7 @@ public class JSONClient {
             array.addAll(source.getJSONArray(name));
         }
     }
-    
+
     protected JSONObject doPost(String restPath, JSONObject payload) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("POST");
@@ -235,7 +240,7 @@ public class JSONClient {
         }
         return handleResponse(restPath, connection);
     }
-    
+
     protected JSONObject doDelete(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("DELETE");

@@ -106,6 +106,7 @@ public class JobsImpl extends JSONClient implements Jobs {
 				}
 				if (percentage != lastPercentage) {
 					monitor.logMessage(percentage + "%");
+					lastPercentage = percentage;
 				}
 			}
 			try {
@@ -177,6 +178,8 @@ public class JobsImpl extends JSONClient implements Jobs {
 			connection.setRequestProperty("Authorization", "Basic " + encoding);
 		}
 		connection.setRequestMethod("GET");
+		connection.setConnectTimeout(ONE_MINUTE);
+		connection.setReadTimeout(FIVE_MINUTES);
 		return connection.getInputStream();
 	}
 }
