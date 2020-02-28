@@ -1,28 +1,21 @@
-Readme for the environment manager tools project
-================================================
+# Introduction
 
-This project contains a client for the Environment Manager REST API via Jenkins.
+The Parasoft Environment Manager plugin for Jenkins lets you rapidly
+configure various actions needed for automated, continuous testing
+across your software delivery pipeline. You can configure build steps
+for:
 
-For documentation please visit the link [Environment Manager Plugin for Jenkins](https://docs.parasoft.com/display/SOAVIRT9103CTP310/Environment+Manager+Plugin+for+Jenkins+2.5)
+-   Provisioning environments into the specific states needed for
+    automated testing
+-   Replicating environments and associated assets to different
+    Virtualize servers, including servers dynamically-provisioned from
+    Docker or other container technologies
+-   Executing Parasoft test scenario jobs (tests suites that execute vs.
+    specific environment configurations)
+-   Destroying "dirtied" test environments to ensure that subsequent
+    tests always begin with a clean slate
+-   Disconnecting a Virtualize server from Environment Manager to remove
+    unnecessary connections
 
-Prerequisites for building:
---------------------------
- - Java 6 JDK
- - Maven 3
-
-To build:
----------
-
-mvn clean install
-
-To run:
--------
-
-mvn hpi:run -Djetty.port=8082
-
-
-To perform a release:
---------------------
-
-mvn release:prepare release:perform
-
+For documentation please visit the link [Environment Manager Plugin for
+Jenkins](https://docs.parasoft.com/display/SOAVIRT9107CTP313/Environment+Manager+Plugin+for+Jenkins+2.10)

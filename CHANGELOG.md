@@ -53,25 +53,3 @@
 
 -   Fix build step drop down not able to display more than 100 test
     execution jobs (issue CTP-2841)
-
-# Introduction
-
-The Parasoft Environment Manager plugin for Jenkins lets you rapidly
-configure various actions needed for automated, continuous testing
-across your software delivery pipeline. You can configure build steps
-for:
-
--   Provisioning environments into the specific states needed for
-    automated testing
--   Replicating environments and associated assets to different
-    Virtualize servers, including servers dynamically-provisioned from
-    Docker or other container technologies
--   Executing Parasoft test scenario jobs (tests suites that execute vs.
-    specific environment configurations)
--   Destroying "dirtied" test environments to ensure that subsequent
-    tests always begin with a clean slate
--   Disconnecting a Virtualize server from Environment Manager to remove
-    unnecessary connections
-
-For documentation please visit the link [Environment Manager Plugin for
-Jenkins](https://docs.parasoft.com/display/SOAVIRT9107CTP313/Environment+Manager+Plugin+for+Jenkins+2.10)
