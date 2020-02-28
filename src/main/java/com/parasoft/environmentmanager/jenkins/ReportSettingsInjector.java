@@ -81,6 +81,9 @@ public class ReportSettingsInjector extends InputStream {
         if (TAG.equals(attributeName.toString())) {
             next = tagBuffer.read();
         }
+        if (EXEC_ENV.equals(attributeName.toString())) {
+            next = execEnvBuffer.read();
+        }
         if (next == -1) {
             next = '"';
             replaceAttributeValue = false;
