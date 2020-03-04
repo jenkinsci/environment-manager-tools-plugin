@@ -133,10 +133,11 @@ public class JobsImpl extends JSONClient implements Jobs {
 			for (int i = 0; i < testHistories.size(); i++) {
 				JSONObject obj = testHistories.getJSONObject(i);
 				Long reportId = obj.getLong("reportId");
-				if (!historyMap.containsKey(reportId)) {
-					historyMap.put(reportId, new JSONArray());
-				}
 				JSONArray tests = historyMap.get(reportId);
+				if (tests == null) {
+					tests = new JSONArray();
+					historyMap.put(reportId, tests);
+				}
 				tests.add(obj);
 			}
 		}
@@ -151,7 +152,6 @@ public class JobsImpl extends JSONClient implements Jobs {
 		if (reportIds != null) {
 			for (int i = 0; i < reportIds.size(); i++) {
 				Long reportId = reportIds.getLong(i);
-				monitor.logMessage(baseUrl + "testreport/" + reportId + "/report.html");
 				JSONArray tests = historyMap.get(reportId);
 				if (tests != null) {
 					for (int j = 0; j < tests.size(); j++) {
@@ -159,6 +159,7 @@ public class JobsImpl extends JSONClient implements Jobs {
 						monitor.logMessage("Test: " + test.getString("name") + ".tst " + test.getString("status"));
 					}
 				}
+				monitor.logMessage(baseUrl + "testreport/" + reportId + "/report.html");
 			}
 		}
 		return result;
