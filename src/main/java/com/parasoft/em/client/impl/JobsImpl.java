@@ -156,7 +156,7 @@ public class JobsImpl extends JSONClient implements Jobs {
 				if (tests != null) {
 					for (int j = 0; j < tests.size(); j++) {
 						JSONObject test = tests.getJSONObject(j);
-						monitor.logMessage("Test: " + test.getString("name") + " " + test.getString("status"));
+						monitor.logMessage("Test: " + test.getString("name") + ".tst " + test.getString("status"));
 					}
 				}
 			}
