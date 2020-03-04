@@ -21,6 +21,9 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -124,15 +127,38 @@ public class JobsImpl extends JSONClient implements Jobs {
 		} else {
 			result = false;
 		}
+		Map<Long, JSONArray> historyMap = new TreeMap<Long, JSONArray>();
+		JSONArray testHistories = history.optJSONArray("testHistories");
+		if (testHistories != null) {
+			for (int i = 0; i < testHistories.size(); i++) {
+				JSONObject obj = testHistories.getJSONObject(i);
+				Long reportId = obj.getLong("reportId");
+				if (!historyMap.containsKey(reportId)) {
+					historyMap.put(reportId, new JSONArray());
+				}
+				JSONArray tests = historyMap.get(reportId);
+				tests.add(obj);
+			}
+		}
 		if ("FAILED".equalsIgnoreCase(status)) {
-			monitor.logMessage("Some tests failed.");
+			if (historyMap.isEmpty()) {
+				monitor.logMessage("Some tests failed.");
+			}
 		} else if ("CANCELED".equalsIgnoreCase(status)) {
 			monitor.logMessage("Test execution was canceled.");
 		}
 		JSONArray reportIds = history.optJSONArray("reportIds");
 		if (reportIds != null) {
 			for (int i = 0; i < reportIds.size(); i++) {
-				monitor.logMessage(baseUrl + "testreport/" + reportIds.getLong(i) + "/report.html");
+				Long reportId = reportIds.getLong(i);
+				monitor.logMessage(baseUrl + "testreport/" + reportId + "/report.html");
+				JSONArray tests = historyMap.get(reportId);
+				if (tests != null) {
+					for (int j = 0; j < tests.size(); j++) {
+						JSONObject test = tests.getJSONObject(j);
+						monitor.logMessage("Test: " + test.getString("name") + " " + test.getString("status"));
+					}
+				}
 			}
 		}
 		return result;
