@@ -25,7 +25,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -221,9 +224,14 @@ public class ExecuteJobBuilder extends Builder {
 					}
 					ReportScanner reportScanner = null;
 					InputStream reportInputStream = null;
+					Map<String, InputStream> htmlResources = new HashMap<String, InputStream>();
 					try {
 						boolean connectToDTP = true;
 						reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
+						htmlResources.put("report.html", jobs.download("testreport/" + reportIds.getLong(i) + "/report.html"));
+						htmlResources.put("rep_header_4.png", jobs.download("testreport/" + reportIds.getLong(i) + "/rep_header_4.png"));
+						htmlResources.put("rep_header_expander.jpg", jobs.download("testreport/" + reportIds.getLong(i) + "/rep_header_expander.jpg"));
+						htmlResources.put("rep_header_logo.png", jobs.download("testreport/" + reportIds.getLong(i) + "/rep_header_logo.png"));
 						reportScanner = new ReportScanner(reportInputStream);
 						reportInputStream = reportScanner;
 						String projectName = null,
@@ -278,6 +286,9 @@ public class ExecuteJobBuilder extends Builder {
 						FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
 						reportDir.mkdirs();
 						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
+						for (Entry<String, InputStream> resource : htmlResources.entrySet()) {
+                            new FilePath(reportDir, resource.getKey()).copyFrom(resource.getValue());
+                        }
 						reportXmlFile.copyFrom(reportInputStream);
 						if (publish) { 
 						    //fail the job if publish is enabled but cannot connect to DTP
