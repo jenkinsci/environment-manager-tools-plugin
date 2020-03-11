@@ -23,12 +23,15 @@ import java.io.PrintStream;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -223,15 +226,13 @@ public class ExecuteJobBuilder extends Builder {
 						continue;
 					}
 					ReportScanner reportScanner = null;
+					HTMLReportScanner collector = null;
 					InputStream reportInputStream = null;
-					Map<String, InputStream> htmlResources = new HashMap<String, InputStream>();
 					try {
 						boolean connectToDTP = true;
 						reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
-						htmlResources.put("report.html", jobs.download("testreport/" + reportIds.getLong(i) + "/report.html"));
-						htmlResources.put("rep_header_4.png", jobs.download("testreport/" + reportIds.getLong(i) + "/rep_header_4.png"));
-						htmlResources.put("rep_header_expander.jpg", jobs.download("testreport/" + reportIds.getLong(i) + "/rep_header_expander.jpg"));
-						htmlResources.put("rep_header_logo.png", jobs.download("testreport/" + reportIds.getLong(i) + "/rep_header_logo.png"));
+						InputStream htmlReport = jobs.download("testreport/" + reportIds.getLong(i) + "/report.html");
+						collector = new HTMLReportScanner(htmlReport);
 						reportScanner = new ReportScanner(reportInputStream);
 						reportInputStream = reportScanner;
 						String projectName = null,
@@ -285,11 +286,25 @@ public class ExecuteJobBuilder extends Builder {
 						}
 						FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
 						reportDir.mkdirs();
-						FilePath reportXmlFile = new FilePath(reportDir, "report.xml");
-						for (Entry<String, InputStream> resource : htmlResources.entrySet()) {
-                            new FilePath(reportDir, resource.getKey()).copyFrom(resource.getValue());
+						FilePath reportXMLFile = new FilePath(reportDir, "report.xml");
+						FilePath reportHTMLFile = new FilePath(reportDir, "report.html");
+						reportXMLFile.copyFrom(reportInputStream);
+						reportHTMLFile.copyFrom(collector);
+						Set<String> images = collector.getImages();
+						String prefix = "";
+						for (String image : images) {
+						    if ("rep_header_logo_x10.png".equals(image)) {
+						        //when executing jobs that run against the soavirt war file
+						        //the images are under a special directory 'archive'
+						        prefix = "archive/";
+						        break;
+						    }
+						}
+						for (String image : collector.getImages()) {
+						    InputStream stream = jobs.download("testreport/" + reportIds.getLong(i) + "/" + prefix + image);
+						    new FilePath(reportDir, image).copyFrom(stream);
+						    
                         }
-						reportXmlFile.copyFrom(reportInputStream);
 						if (publish) { 
 						    //fail the job if publish is enabled but cannot connect to DTP
 						    if (connectToDTP) {
@@ -297,7 +312,7 @@ public class ExecuteJobBuilder extends Builder {
     					        listener.getLogger().println("Project: " + (projectName == null || projectName.isEmpty() ? "Not Specified" : projectName));    
     					        listener.getLogger().println("Build ID: " + (expandedBuildId == null  || expandedBuildId.isEmpty() ? "Not Specified" : expandedBuildId));
     					        listener.getLogger().println("Session Tag: " + (expandedSessionTag == null ||expandedSessionTag.isEmpty() ?  "Not Specified" : expandedSessionTag));
-    						    result = publishReport(reportXmlFile, listener.getLogger()) && result;
+    						    result = publishReport(reportXMLFile, listener.getLogger()) && result;
 						    } else {
 						        result = false;
 						    }
@@ -308,6 +323,9 @@ public class ExecuteJobBuilder extends Builder {
 					} finally {
 						if (reportInputStream != null) {
 							reportInputStream.close();
+						}
+						if (collector != null) {
+						    collector.close();
 						}
 					}
 					if (reportScanner != null) {
