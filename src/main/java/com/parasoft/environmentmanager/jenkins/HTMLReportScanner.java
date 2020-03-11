@@ -52,9 +52,6 @@ public class HTMLReportScanner extends InputStream {
         } else if (next =='/' || next == '>' && !insideQuotes) {
             insideElement = false;
         }
-        if (IMG_ELEMENT.equals(elementName.toString())) {
-            System.out.println();
-        }
         if (isValidElement() && insideElement) {
             if (insideAttributeValue) {
                 if (next == '"') {
