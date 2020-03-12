@@ -23,14 +23,10 @@ import java.io.PrintStream;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
@@ -212,12 +208,27 @@ public class ExecuteJobBuilder extends Builder {
 				baseUrl += "/";
 			}
 			history = jobs.getHistory(jobId, history.getLong("id"));
+			Map<Long, JSONArray> historyMap = new HashMap<Long, JSONArray>();
+			JSONArray testHistories = history.optJSONArray("testHistories");
+			if (testHistories != null) {
+				for (int i = 0; i < testHistories.size(); i++) {
+					JSONObject obj = testHistories.getJSONObject(i);
+					Long reportId = obj.getLong("reportId");
+					JSONArray tests = historyMap.get(reportId);
+					if (tests == null) {
+						tests = new JSONArray();
+						historyMap.put(reportId, tests);
+					}
+					tests.add(obj);
+				}
+			}
 			JSONArray reportIds = history.optJSONArray("reportIds");
 			if (reportIds != null) {
 				List<String> execEnvs = extractEnvironmentNames(jobJSON);
 				for (int i = 0; i < reportIds.size(); i++) {
 					String name = jobJSON.getString("name");
-					String reportUrl = baseUrl + "testreport/" + reportIds.getLong(i) + "/report.html";
+					Long reportId = reportIds.getLong(i);
+					String reportUrl = baseUrl + "testreport/" + reportId + "/report.html";
 					int tests = 1;
 					int failures = result ? 0 : 1;
 					FilePath workspace = build.getWorkspace();
@@ -228,6 +239,7 @@ public class ExecuteJobBuilder extends Builder {
 					ReportScanner reportScanner = null;
 					HTMLReportScanner collector = null;
 					InputStream reportInputStream = null;
+					String execEnv = null;
 					try {
 						boolean connectToDTP = true;
 						reportInputStream = jobs.download("testreport/" + reportIds.getLong(i) + "/report.xml");
@@ -237,8 +249,7 @@ public class ExecuteJobBuilder extends Builder {
 						reportInputStream = reportScanner;
 						String projectName = null,
 								expandedBuildId = null,
-								expandedSessionTag = null,
-								execEnv = null;
+								expandedSessionTag = null;
 						if (!execEnvs.isEmpty()) {
 							execEnv = execEnvs.remove(0);
 						}
@@ -336,7 +347,23 @@ public class ExecuteJobBuilder extends Builder {
 							tests = reportScanner.getTotalCount();
 						}
 					}
-					build.addAction(new ProvisioningEventAction(build, name, reportUrl, tests, failures));
+					JSONArray testsArray = historyMap.get(reportId);
+					if (testsArray != null) {
+						for (int j = 0; j < testsArray.size(); j++) {
+							JSONObject test = testsArray.getJSONObject(j);
+							String testName = test.getString("name") + ".tst";
+							if ((execEnv != null) && !execEnv.isEmpty()) {
+								testName += " [" + execEnv + ']';
+							}
+							int failed = 0;
+							if ("FAILED".equals(test.getString("status"))) {
+								failed = 1;
+							}
+							build.addAction(new ProvisioningEventAction(build, testName, reportUrl, 1, failed));
+						}
+					} else {
+						build.addAction(new ProvisioningEventAction(build, name, reportUrl, tests, failures));
+					}
 				}
 			}
 		}

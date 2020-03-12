@@ -21,9 +21,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -127,7 +126,7 @@ public class JobsImpl extends JSONClient implements Jobs {
 		} else {
 			result = false;
 		}
-		Map<Long, JSONArray> historyMap = new TreeMap<Long, JSONArray>();
+		Map<Long, JSONArray> historyMap = new HashMap<Long, JSONArray>();
 		JSONArray testHistories = history.optJSONArray("testHistories");
 		if (testHistories != null) {
 			for (int i = 0; i < testHistories.size(); i++) {
