@@ -119,13 +119,6 @@ public class JobsImpl extends JSONClient implements Jobs {
 			status = history.optString("status");
 			percentage = history.optInt("percentage");
 		}
-		boolean result;
-		if ("PASSED".equalsIgnoreCase(status)) {
-			monitor.logMessage("All tests passed.");
-			result = true;
-		} else {
-			result = false;
-		}
 		Map<Long, JSONArray> historyMap = new HashMap<Long, JSONArray>();
 		JSONArray testHistories = history.optJSONArray("testHistories");
 		if (testHistories != null) {
@@ -140,7 +133,13 @@ public class JobsImpl extends JSONClient implements Jobs {
 				tests.add(obj);
 			}
 		}
-		if ("FAILED".equalsIgnoreCase(status)) {
+		boolean result = false;
+		if ("PASSED".equalsIgnoreCase(status)) {
+			result = true;
+			if (historyMap.isEmpty()) {
+				monitor.logMessage("All tests passed.");
+			}
+		} else if ("FAILED".equalsIgnoreCase(status)) {
 			if (historyMap.isEmpty()) {
 				monitor.logMessage("Some tests failed.");
 			}
