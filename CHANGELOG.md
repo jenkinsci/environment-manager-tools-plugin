@@ -1,4 +1,8 @@
-# Change Log 
+# Change Log
+
+### Version 2.165 (March 13, 2020)
+
+-   List TST file names and status in job consol (issue CTP-4550)
 
 ### Version 2.15 (February 28, 2020)
 
