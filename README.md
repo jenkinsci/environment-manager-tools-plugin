@@ -18,4 +18,4 @@ for:
     unnecessary connections
 
 For documentation please visit the link [Environment Manager Plugin for
-Jenkins](https://docs.parasoft.com/display/SOAVIRT9107CTP313/Environment+Manager+Plugin+for+Jenkins+2.10)
+Jenkins](https://docs.parasoft.com/display/SVC20201/Environment+Manager+Plugin+for+Jenkins)
