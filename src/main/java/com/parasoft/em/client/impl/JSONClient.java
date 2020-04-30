@@ -220,7 +220,9 @@ public class JSONClient {
             
             String name = entry.getKey();
             JSONArray array = (JSONArray) entry.getValue();
-            array.addAll(source.getJSONArray(name));
+            if (source.has(name)) {
+                array.addAll(source.getJSONArray(name));
+            }
         }
     }
 

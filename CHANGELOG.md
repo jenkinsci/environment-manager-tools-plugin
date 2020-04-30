@@ -1,8 +1,12 @@
 # Change Log
 
+### Version 2.17 (April 30, 2020)
+
+-   Jobs Not Appearing in Environment Manager Jenkins Plugin (issue CTP-5648)
+
 ### Version 2.16 (March 13, 2020)
 
--   List TST file names and status in job consol (issue CTP-4550)
+-   List TST file names and status in job console (issue CTP-4550)
 
 ### Version 2.15 (February 28, 2020)
 
@@ -50,8 +54,7 @@
 
 ### Version 2.6 (September 25, 2018)
 
--   Improve API query performance for test execution jobs (issue
-    CTP-[4](https://jira.parasoft.com/browse/CTP-4082 "View this issue")082)
+-   Improve API query performance for test execution jobs (issue CTP-4082)
 
 ### Version 2.5 (Aug 3, 2017)
 
