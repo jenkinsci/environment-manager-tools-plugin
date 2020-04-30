@@ -14,7 +14,7 @@
     <name>Parasoft</name>
     <url>http://www.parasoft.com</url>
   </organization>
-  <version>2.17</version>
+  <version>2.18-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <url>https://github.com/jenkinsci/environment-manager-tools-plugin</url>
   <properties>
@@ -196,7 +196,7 @@
     <connection>scm:git:ssh://github.com/jenkinsci/environment-manager-tools-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/environment-manager-tools-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/environment-manager-tools-plugin</url>
-    <tag>environment-manager-2.17</tag>
+    <tag>master</tag>
   </scm>
 
   <repositories>
