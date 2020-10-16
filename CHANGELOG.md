@@ -1,8 +1,12 @@
 # Change Log
 
+### Version 2.18 (October 16, 2020)
+
+-   Timeout feature for test scenario execution jobs (issue CTP-4581)
+
 ### Version 2.17 (April 30, 2020)
 
--   Jobs Not Appearing in Environment Manager Jenkins Plugin (issue CTP-5648)
+-   Jobs not appearing in Environment Manager Jenkins Plugin (issue CTP-5648)
 
 ### Version 2.16 (March 13, 2020)
 

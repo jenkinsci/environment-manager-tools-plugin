@@ -27,6 +27,11 @@
   <f:block>
     <table>
       <f:optionalBlock name="abortOnFailure" title="Abort the build on test failure" checked="${instance.abortOnFailure}" inline="true" />
+      <f:optionalBlock name="abortOnTimeout" title="Abort the build if it's stuck" checked="${instance.abortOnTimeout}" inline="true">
+        <f:entry title="Timeout minutes" field="timeoutMinutes">
+          <f:number clazz="positive-number"/>
+        </f:entry>
+      </f:optionalBlock>
       <f:optionalBlock name="publish" title="Publish test execution results to DTP" checked="${instance.publish}" inline="true">
         <f:entry title="Project" field="projectId">
           <f:select />

@@ -87,6 +87,8 @@ public class ExecuteJobBuilder extends Builder {
 	private String jobName;
 	private String jobType;
 	private boolean abortOnFailure;
+	private boolean abortOnTimeout;
+	private int timeoutMinutes;
 	private boolean publish;
 	private long projectId;
 	private String buildId;
@@ -99,6 +101,8 @@ public class ExecuteJobBuilder extends Builder {
 		String jobName,
 		String jobType,
 		boolean abortOnFailure,
+		boolean abortOnTimeout,
+		int timeoutMinutes,
 		boolean publish,
 		long projectId,
 		String buildId,
@@ -110,6 +114,8 @@ public class ExecuteJobBuilder extends Builder {
 		this.jobName = jobName;
 		this.jobType = jobType;
 		this.abortOnFailure = abortOnFailure;
+		this.abortOnTimeout = abortOnTimeout;
+		this.timeoutMinutes = timeoutMinutes;
 		this.publish = publish;
 		this.projectId = projectId;
 		this.buildId = buildId;
@@ -139,6 +145,14 @@ public class ExecuteJobBuilder extends Builder {
 
 	public boolean getAbortOnFailure() {
 		return abortOnFailure;
+	}
+
+	public boolean getAbortOnTimeout() {
+		return abortOnTimeout;
+	}
+
+	public int getTimeoutMinutes() {
+		return timeoutMinutes <= 0 ? 60 : timeoutMinutes;
 	}
 
 	public boolean getPublish() {
@@ -195,6 +209,7 @@ public class ExecuteJobBuilder extends Builder {
 			jobsToExecute.add(jobJSON);
 		}
 		boolean allTestsPassed = true;
+		long startTime = System.currentTimeMillis();
 		for (JSONObject jobJSON : jobsToExecute) {
 			listener.getLogger().println("Executing \"" + jobJSON.getString("name") + "\" on " + emUrl);
 			JSONObject history = jobs.executeJob(jobJSON.getLong("id"));
@@ -202,7 +217,7 @@ public class ExecuteJobBuilder extends Builder {
 				public void logMessage(String message) {
 					listener.getLogger().println(message);
 				}
-			});
+			}, abortOnTimeout ? getTimeoutMinutes() : 0);
 			String baseUrl = emUrl;
 			if (!baseUrl.endsWith("/")) {
 				baseUrl += "/";
@@ -368,7 +383,9 @@ public class ExecuteJobBuilder extends Builder {
 			}
 		}
 		if (!allTestsPassed) {
-			if (abortOnFailure) {
+			if (abortOnFailure ||
+				(abortOnTimeout && ((System.currentTimeMillis() - startTime) / 60000 > timeoutMinutes)))
+			{
 				build.setResult(Result.FAILURE);
 				result = false;
 			} else {

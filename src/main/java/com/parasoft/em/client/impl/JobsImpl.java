@@ -57,11 +57,18 @@ public class JobsImpl extends JSONClient implements Jobs {
 		return doGet("api/v2/jobs/" + jobId);
 	}
 
+	public JSONObject cancelJob(long jobId, long historyId) throws IOException {
+		JSONObject json = new JSONObject();
+		json.put("status", "CANCELED");
+		return doPut("api/v2/jobs/" + jobId + "/histories/" + historyId, json);
+	}
+
 	public JSONObject executeJob(long jobId) throws IOException {
 		return doPost("api/v2/jobs/" + jobId + "/histories", null);
 	}
 
-	public boolean monitorExecution(JSONObject history, EventMonitor monitor) throws IOException {
+	public boolean monitorExecution(JSONObject history, EventMonitor monitor, int timeoutMinutes) throws IOException {
+		long startTime = System.currentTimeMillis();
 		try {
 			Thread.sleep(1000); // Sleep at the beginning to give EM a chance to start executing
 		} catch (InterruptedException e1) {
@@ -110,6 +117,11 @@ public class JobsImpl extends JSONClient implements Jobs {
 					monitor.logMessage(percentage + "%");
 					lastPercentage = percentage;
 				}
+			}
+			if ((timeoutMinutes > 0) && ((System.currentTimeMillis() - startTime) / 60000 > timeoutMinutes)) {
+				monitor.logMessage("Test execution job timed out after " + timeoutMinutes + " minute" + (timeoutMinutes > 1 ? 's' : "") + '.');
+				cancelJob(jobId, historyId);
+				return false;
 			}
 			try {
 				Thread.sleep(1000);

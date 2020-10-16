@@ -26,7 +26,7 @@ public interface Jobs {
 	JSONObject getJobsByName(String name) throws IOException;
 	JSONObject getJob(long jobId) throws IOException;
 	JSONObject executeJob(long jobId) throws IOException;
-	boolean monitorExecution(JSONObject history, EventMonitor monitor) throws IOException;
+	boolean monitorExecution(JSONObject history, EventMonitor monitor, int timeoutMinutes) throws IOException;
 	JSONObject getHistory(long jobId, long historyId) throws IOException;
 	JSONObject deleteHistory(long jobId, long historyId) throws IOException;
 	InputStream download(String urlPath) throws IOException;

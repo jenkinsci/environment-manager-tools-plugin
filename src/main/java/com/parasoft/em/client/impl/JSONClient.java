@@ -243,6 +243,23 @@ public class JSONClient {
         return handleResponse(restPath, connection);
     }
 
+    protected JSONObject doPut(String restPath, JSONObject payload) throws IOException {
+        HttpURLConnection connection = getConnection(restPath);
+        connection.setRequestMethod("PUT");
+        if (payload != null) {
+            String payloadString = payload.toString();
+            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+            BufferedOutputStream stream = new BufferedOutputStream(connection.getOutputStream());
+            try {
+                byte[] bytes = payloadString.getBytes("UTF-8");
+                stream.write(bytes, 0, bytes.length);
+            } finally {
+                stream.close();
+            }
+        }
+        return handleResponse(restPath, connection);
+    }
+
     protected JSONObject doDelete(String restPath) throws IOException {
         HttpURLConnection connection = getConnection(restPath);
         connection.setRequestMethod("DELETE");
