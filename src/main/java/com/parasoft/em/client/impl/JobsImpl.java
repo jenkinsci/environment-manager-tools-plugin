@@ -67,14 +67,16 @@ public class JobsImpl extends JSONClient implements Jobs {
 		return doPost("api/v2/jobs/" + jobId + "/histories", null);
 	}
 
-	public boolean monitorExecution(JSONObject history, EventMonitor monitor, int timeoutMinutes) throws IOException {
+	public boolean monitorExecution(JSONObject history, EventMonitor monitor, int timeoutMinutes) throws IOException, InterruptedException {
 		long startTime = System.currentTimeMillis();
+		long jobId = history.getLong("jobId");
+		long historyId = history.getLong("id");
 		try {
 			Thread.sleep(1000); // Sleep at the beginning to give EM a chance to start executing
 		} catch (InterruptedException e1) {
+			cancelJob(jobId, historyId);
+			throw e1;
 		}
-		long jobId = history.getLong("jobId");
-		long historyId = history.getLong("id");
 		JSONObject context = history.optJSONObject("context");
 		if (context != null) {
 			Systems systems = new SystemsImpl(baseUrl, username, password);
@@ -126,6 +128,8 @@ public class JobsImpl extends JSONClient implements Jobs {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
+				cancelJob(jobId, historyId);
+				throw e;
 			}
 			history = getHistory(jobId, historyId);
 			status = history.optString("status");

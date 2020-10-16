@@ -52,11 +52,8 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
         return doGet("api/v1/provisions/" + id);
     }
     
-    public boolean monitorEvent(JSONObject event, EventMonitor monitor) throws IOException {
-        try {
-            Thread.sleep(1000); // Sleep at the beginning to give EM a chance to start provisioning
-        } catch (InterruptedException e1) {
-        }
+    public boolean monitorEvent(JSONObject event, EventMonitor monitor) throws IOException, InterruptedException {
+        Thread.sleep(1000); // Sleep at the beginning to give EM a chance to start provisioning
         Systems systems = new SystemsImpl(baseUrl, username, password);
         Environments environments = new EnvironmentsImpl(baseUrl, username, password);
         
@@ -81,10 +78,7 @@ public class ProvisionsImpl extends JSONClient implements Provisions {
             String result = step.getString("result");
             String lastPercent = "";
             while ("running".equals(result)) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
+                Thread.sleep(1000);
                 String percent = step.getString("percent");
                 if (!lastPercent.equals(percent)) {
                     monitor.logMessage(percent + "%");
