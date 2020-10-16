@@ -167,14 +167,8 @@ public class EnvironmentManagerBuilder extends Builder {
         return repoUsername == null ? "admin" : repoUsername;
     }
     
-    public String getRepoPassword() {
-        if (repoPassword != null) {
-            String plainText = repoPassword.getPlainText();
-            if (!plainText.isEmpty()) {
-                return plainText;
-            }
-        }
-        return "admin";
+    public Secret getRepoPassword() {
+        return repoPassword == null ? Secret.fromString("admin") : repoPassword;
     }
     
     public boolean isAbortOnFailure() {
@@ -274,7 +268,7 @@ public class EnvironmentManagerBuilder extends Builder {
             if (dataRepoSettings != null) {
                 dataRepoSettings.put("port", getRepoPort());
                 dataRepoSettings.put("username", getRepoUsername());
-                dataRepoSettings.put("password", getRepoPassword());
+                dataRepoSettings.put("password", getRepoPassword().getPlainText());
             }
             JSONObject copyEvent = environmentCopy.createEnvironmentCopy(environmentId, targetServerId, envVars.expand(newEnvironmentName), copyDataRepo, dataRepoSettings);
             boolean copyResult = environmentCopy.monitorEvent(copyEvent, new EventMonitor() {
