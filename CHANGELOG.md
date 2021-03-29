@@ -1,5 +1,9 @@
 # Change Log
 
+### Version 2.19 (March 29, 2021)
+
+-   Error thrown when executing jobs by name (issue CTP-6591)
+
 ### Version 2.18 (October 16, 2020)
 
 -   Timeout feature for test scenario execution jobs (issue CTP-4581)

@@ -222,7 +222,7 @@ public class ExecuteJobBuilder extends Builder {
 			if (!baseUrl.endsWith("/")) {
 				baseUrl += "/";
 			}
-			history = jobs.getHistory(jobId, history.getLong("id"));
+			history = jobs.getHistory(jobJSON.getLong("id"), history.getLong("id"));
 			Map<Long, JSONArray> historyMap = new HashMap<Long, JSONArray>();
 			JSONArray testHistories = history.optJSONArray("testHistories");
 			if (testHistories != null) {
@@ -303,11 +303,10 @@ public class ExecuteJobBuilder extends Builder {
 									execEnv,
 									reportInputStream);
 							} catch (IOException e) {
-							    connectToDTP = false;
-							    if (publish) {
-							        listener.getLogger().println("Cannot connect to DTP: " + e.getLocalizedMessage());
-							    }
-							    
+								connectToDTP = false;
+								if (publish) {
+									listener.getLogger().println("Cannot connect to DTP: " + e.getLocalizedMessage());
+								}
 							}
 						}
 						FilePath reportDir = new FilePath(workspace, "target/parasoft/soatest/" + reportIds.getLong(i));
@@ -327,10 +326,9 @@ public class ExecuteJobBuilder extends Builder {
 						    }
 						}
 						for (String image : collector.getImages()) {
-						    InputStream stream = jobs.download("testreport/" + reportIds.getLong(i) + "/" + prefix + image);
-						    new FilePath(reportDir, image).copyFrom(stream);
-						    
-                        }
+							InputStream stream = jobs.download("testreport/" + reportIds.getLong(i) + "/" + prefix + image);
+							new FilePath(reportDir, image).copyFrom(stream);
+						}
 						if (publish) { 
 						    //fail the job if publish is enabled but cannot connect to DTP
 						    if (connectToDTP) {
