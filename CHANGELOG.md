@@ -1,5 +1,9 @@
 # Change Log
 
+### Version 2.20 (April 5, 2023)
+
+-   NoClassDefFound: org/apache/commons/httpclient/util/URIUtil (issue CTP-8601)
+
 ### Version 2.19 (March 29, 2021)
 
 -   Error thrown when executing jobs by name (issue CTP-6591)

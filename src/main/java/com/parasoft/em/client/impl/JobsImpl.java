@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.util.URIUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -50,7 +50,7 @@ public class JobsImpl extends JSONClient implements Jobs {
 	}
 
 	public JSONObject getJobsByName(String name) throws IOException {
-		return doGet("api/v2/jobs", "name=" + URIUtil.encodeWithinQuery(name, "UTF-8"), true);
+		return doGet("api/v2/jobs", "name=" + URLEncoder.encode(name, "UTF-8"), true);
 	}
 
 	public JSONObject getJob(long jobId) throws IOException {
